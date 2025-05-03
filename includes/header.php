@@ -19,6 +19,9 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
   <!-- CSS Files -->
   <link id="pagestyle" href="assets/css/material-dashboard.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
 </head>
 
 <body class="g-sidenav-show  bg-gray-200">
