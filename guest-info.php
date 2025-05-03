@@ -21,9 +21,14 @@ $sql = "
         g.lname,
         g.email,
         g.contact_number,
-        CONCAT(g.fname, ' ', g.lname) AS fullname
+        CONCAT(g.fname, ' ', g.lname) AS fullname,
+        CASE 
+            WHEN CURDATE() BETWEEN r.check_in_date AND r.check_out_date THEN 'Active'
+            ELSE 'Not Active'
+        END AS status
     FROM guests_tb g
     $searchQuery
+    LEFT JOIN reservations_tb r ON g.guests_id = r.guest_id
 ";
 
 $result = $connection->query($sql);
@@ -67,7 +72,13 @@ $result = $connection->query($sql);
                                     <td><?= htmlspecialchars($row['fullname']) ?></td>
                                     <td><?= htmlspecialchars($row['email']) ?></td>
                                     <td><?= htmlspecialchars($row['contact_number']) ?></td>
-                                    <td><span class="badge bg-success">Active</span></td> <!-- Placeholder for status -->
+                                    <td>
+                                       <?php if ($row['status'] === 'Active'): ?>
+                                       <span class="badge bg-success">Active</span>
+                                       <?php else: ?>
+                                       <span class="badge bg-secondary">Not Active</span>
+                                        <?php endif; ?>
+                                    </td> <!-- Placeholder for status -->
                                     <td class="text-center">
                                         <a href="#" class="text-primary me-2" title="Edit"><i class="fas fa-edit fa-lg"></i></a>
                                         <a href="#" class="text-danger" title="Archive"><i class="fas fa-archive fa-lg"></i></a>
@@ -143,6 +154,7 @@ $result = $connection->query($sql);
 
 .input-group-text {
     color: white;
+    background-color: initial;
     border: none;
     display: flex;
     align-items: center;

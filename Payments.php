@@ -9,6 +9,7 @@ $sql = "
         g.contact_number,
         CONCAT(g.fname, ' ', g.lname) AS fullname,
         p.amount_paid,
+        p.method,
         ps.status_name
     FROM payments_tb p
     LEFT JOIN payment_status_tb ps ON p.payment_status_id = ps.payment_status_id
@@ -34,7 +35,7 @@ $result = $connection->query($sql);
                             <th>Contact Number</th>
                             <th>Amount Paid</th>
                             <th>Payment Status</th>
-                            <th>Generate Invoice</th>
+                            <th>Payment Method</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>

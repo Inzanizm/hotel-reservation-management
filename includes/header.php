@@ -20,6 +20,25 @@
   <!-- CSS Files -->
   <link id="pagestyle" href="assets/css/material-dashboard.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="dist/css/adminlte.css">
+  <link rel="stylesheet" href="dist/css/custom.css">
+
+  <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="plugins/summernote/summernote-bs4.min.css">
+  <!-- <link rel="stylesheet" href="https://plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://plugins/datatables-buttons/css/buttons.bootstrap4.min.css"> -->
+
+
+
+  <script src="plugins/jquery/jquery.min.js"></script>
+    
+    <script src="plugins/jquery-ui/jquery-ui.min.js"></script>
+   
+    <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
+
+    <script src="plugins/toastr/toastr.min.js"></script>
+    
+  <script src="dist/js/script.js"></script>
 
 
 </head>

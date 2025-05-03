@@ -19,24 +19,26 @@ $searchQuery = $searchTerm ? "WHERE CONCAT(fname, ' ', lname) LIKE '%$searchTerm
     <div class="card card-outline card-primary">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title">Reservation Management</h3>
-            <button class="btn btn-outline-secondary" type="submit">
+            <!-- <div class="filter-search-container"> -->
+                <button class="btn btn-outline-secondary" type="submit">
                     <i class="fa fa-filter"></i>
                 </button>
-            <!-- Search bar form for filtering reservations by guest name -->
-            <div class="search-bar-container">
-                <form method="get" action="" class="form input-group">
-                    <input 
-                        type="text" 
-                        name="search" 
-                        class="form-control" 
-                        placeholder="Search by Guest Name"
-                        value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>" 
-                    >
-                    <span class="input-group-text">
-                        <i class="fa fa-search"></i>
-                    </span>
-                </form>
-            </div>
+                <!-- Search bar form for filtering reservations by guest name -->
+                <div class="search-bar-container">
+                    <form method="get" action="" class="form input-group">
+                        <input 
+                            type="text" 
+                            name="search" 
+                            class="form-control" 
+                            placeholder="Search by Guest Name"
+                            value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>" 
+                        >
+                        <span class="input-group-text">
+                            <i class="fa fa-search"></i>
+                        </span>
+                    </form>
+                </div>
+            <!-- </div> -->
         </div>
 
         <div class="card-body">
@@ -191,7 +193,7 @@ $bookedDates = array_unique($bookedDates);
 
 <style>
     .btn-outline-secondary {
-        margin-right: 330px;
+        /* margin-right: 330px; */
         margin-top: 10px;
 }
    .calendar-container {
@@ -298,7 +300,7 @@ $bookedDates = array_unique($bookedDates);
 }
 
     .search-bar-container {
-    position: absolute;
+    /* position: absolute; */
     top: 20px;
     right: 30px;
     width: 30%;
@@ -344,6 +346,7 @@ $bookedDates = array_unique($bookedDates);
 
 .input-group-text {
     color: white;
+    background-color: initial;
     border: none;
     display: flex;
     align-items: center;
