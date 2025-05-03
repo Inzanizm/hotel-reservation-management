@@ -1,25 +1,19 @@
-<?php
-if (isset($_GET['status_id'])) {
-    $inquiry_id = intval($_GET['status_id']);
+<?php include('initialize.php'); ?> 
 
-    // Get or insert 'read' status
-    $status_check = $connection->query("SELECT status_id FROM inquiry_status_tb WHERE status_name = 'read'");
-    if ($status_check->num_rows > 0) {
-        $status_id = $status_check->fetch_assoc()['status_id'];
-    } else {
-        $connection->query("INSERT INTO inquiry_status_tb (status_name) VALUES ('read')");
-        $status_id = $connection->insert_id;
-    }
+<?php 
+if (isset($_GET['inquiry_id'])) {
+    $inquiry_id = intval($_GET['inquiry_id']);
 
-    // Update inquiry: set is_read = 1 and status_id = read
+    // Set status_id = 2 (Read)
     $update = $connection->query("
         UPDATE inquiries_tb 
-        SET is_read = 1, status_id = $status_id 
+        SET status_id = 2 
         WHERE inquiry_id = $inquiry_id
     ");
 
     if ($update) {
         header("Location: inquiries_list.php");
+        exit;
     } else {
         echo "Error updating status: " . $connection->error;
     }

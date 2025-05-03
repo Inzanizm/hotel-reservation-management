@@ -339,6 +339,9 @@
         <div class="form-row">
           <div class="form-group">
             <label for="name">Firstname</label>
+
+
+      
             <input type="text" id="name" placeholder="Your name" >
           </div>
           <div class="form-group">

@@ -65,7 +65,7 @@ $pending_count = ($result_pending && $result_pending->num_rows > 0) ? $result_pe
 // Count of Confirmed Reservations
 $sql_confirmed = "SELECT COUNT(*) as total FROM reservations_tb r
                   JOIN reservation_status_tb rs ON r.reservation_status_id = rs.reservation_status_id
-                  WHERE rs.status_name in ('Confirmed','Completed')";
+                  WHERE rs.status_name in ('Confirmed')";
 $result_confirmed = $connection->query($sql_confirmed);
 $confirmed_count = ($result_confirmed && $result_confirmed->num_rows > 0) ? $result_confirmed->fetch_assoc()['total'] : 0;
 
@@ -83,7 +83,7 @@ $sql_occupied = "SELECT COUNT(*) as total FROM rooms_tb r
 $result_occupied = $connection->query($sql_occupied);
 $occupied_count = ($result_occupied && $result_occupied->num_rows > 0) ? $result_occupied->fetch_assoc()['total'] : 0;
 
-// Count of Occupied Rooms
+// Count of Pending Refunds
 $sql_pendingrefunds = "SELECT COUNT(*) as total FROM refund_tb r
                   JOIN refund_status_tb rs ON r.refund_status_id = rs.refund_status_id
                   WHERE rs.status_name = 'Pending'";
@@ -103,9 +103,10 @@ $today = date('Y-m-d');
 
 // Query to sum total guests who checked in today
 $sql_guests_today = "SELECT SUM(r.total_guests) AS total
-    FROM reservations_tb r
-    JOIN reservation_status_tb rs ON r.reservation_status_id = rs.reservation_status_id
-    WHERE r.check_in_date = CURDATE() AND rs.status_name in ('Confirmed','Completed')";
+FROM reservations_tb r
+JOIN reservation_status_tb rs ON r.reservation_status_id = rs.reservation_status_id
+WHERE CURDATE() BETWEEN r.check_in_date AND r.check_out_date
+  AND rs.status_name IN ('Confirmed', 'Completed')";
 $result = $connection->query($sql_guests_today);
 $row = $result->fetch_assoc();
 $total_guests_today = $row['total'] ?? 0;
