@@ -501,11 +501,11 @@
           <div class="form-row">
             <div class="form-group">
               <label for="name">Name</label>
-              <input type="text" id="name" name="name" placeholder="Your name">
+              <input type="text" id="name" name="name" placeholder="Your name" pattern="[A-Za-z\s]+" title="Name should only contain letters and spaces" required>
             </div>
             <div class="form-group">
               <label for="contact">Contact Number</label>
-              <input type="text" id="contact" name="cn" placeholder="Your number">
+              <input type="text" id="contact" name="cn" placeholder="Your number" maxlength="11" pattern="\d*" oninput="this.value = this.value.replace(/\D/g, '')">
             </div>
           </div>
     

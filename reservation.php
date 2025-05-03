@@ -46,17 +46,17 @@
 							<td class="text-center">
 								<?php 
 									switch ($row['reservation_status_id']){
-                                        case 0:
-                                            echo '<span class="rounded-pill badge badge-secondary col-6">Pending</span>';
-                                            break;
                                         case 1:
-                                            echo '<span class="rounded-pill badge badge-primary col-6" style="color:white;background:green;text-align:center;">Confirmed</span>';
+                                            echo '<span class="rounded-pill badge bg-success ">Completed</span>';
                                             break;
                                         case 2:
-                                            echo '<span class="rounded-pill badge badge-danger col-6">Cancelled</span>';
+                                            echo '<span class="rounded-pill badge bg-warning " >Pending</span>';
                                             break;
                                         case 3:
-                                            echo '<span class="rounded-pill badge badge-success col-6">Completed</span>';
+                                            echo '<span class="rounded-pill badge bg-success ">Confirmed</span>';
+                                            break;
+                                        case 4:
+                                            echo '<span class="rounded-pill badge bg-danger ">Cancelled</span>';
                                             break;
                                     }
 								?>

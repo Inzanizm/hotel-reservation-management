@@ -15,9 +15,9 @@
                     i.contact_number,
                     i.inquiry_type,
                     i.message_body,
-                    i.is_read,
+                    i.received_date,
                     s.status_name,
-                    i.received_date
+                    i.status_id
                 FROM inquiries_tb i
                 LEFT JOIN inquiry_status_tb s ON i.status_id = s.status_id
                 ORDER BY i.received_date DESC
@@ -49,14 +49,14 @@
                                     <td><?= htmlspecialchars($row['inquiry_type']) ?></td>
                                     <td><?= nl2br(htmlspecialchars($row['message_body'])) ?></td>
                                     <td>
-                                        <span class="badge bg-<?= $row['is_read'] ? 'success' : 'warning' ?>">
-                                            <?= $row['is_read'] ? 'Read' : 'Unread' ?>
+                                        <span class="badge bg-<?= $row['status_id'] == 2 ? 'success' : 'warning' ?>">
+                                            <?= htmlspecialchars($row['status_name']) ?>
                                         </span>
                                     </td>
                                     <td><?= date('M d, Y h:i A', strtotime($row['received_date'])) ?></td>
                                     <td class="text-center">
-                                        <?php if (!$row['is_read']): ?>
-                                            <a href="mark_as_read.php?id=<?= $row['inquiry_id'] ?>" class="btn btn-sm btn-success">Mark as Read</a>
+                                        <?php if ($row['status_id'] != 2): ?>
+                                            <a href="mark_as_read.php?inquiry_id=<?= $row['inquiry_id'] ?>" class="btn btn-sm btn-success">Mark as Read</a>
                                         <?php else: ?>
                                             <span class="text-muted">—</span>
                                         <?php endif; ?>
