@@ -12,7 +12,7 @@ $sql = "
         s.status_name,
         rt.base_price,
         IFNULL(CONCAT('₱', FORMAT(rt.base_price - p.discount_percent, 2)), 'N/A') AS seasonal_price,
-        r.description
+        r.descriptions
     FROM rooms_tb r
     LEFT JOIN room_type_tb rt ON r.room_type_id = rt.room_type_id
     LEFT JOIN room_status_tb s ON r.room_status_id = s.room_status_id
@@ -47,7 +47,7 @@ $result = $connection->query($sql);
       <div class="modal-body rounded-0">
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary btn-flat" id='submit' onclick="$('#uni_modal form').submit()">Save</button>
+        <button type="button" name= "save" class="btn btn-primary btn-flat" id='submit' onclick="$('#uni_modal form').submit()">Save</button>
         <button type="button" class="btn btn-secondary btn-flat" data-dismiss="modal">Cancel</button>
       </div>
       </div>
@@ -132,7 +132,7 @@ $result = $connection->query($sql);
                                     </td>
                                     <td>₱<?= number_format($row['base_price'], 2) ?></td>
                                     <td><?= $row['seasonal_price'] ?></td>
-                                    <td><?= htmlspecialchars($row['description']) ?></td>
+                                    <td><?= htmlspecialchars($row['descriptions']) ?></td>
                                     <td class="text-center">
                                         <a data-id=<?= $row['room_id'] ?>" class="text-primary me-2 edit_data" title="Edit" href="javascript:void(0)"><i class="fas fa-edit fa-lg"></i></a>
                                         <a data-id=<?= $row['room_id'] ?>" class="text-danger" title="Archive"><i class="fas fa-archive fa-lg"></i></a>
@@ -259,7 +259,7 @@ $result = $connection->query($sql);
 	function delete_room($id){
 		start_loader();
 		$.ajax({
-			url:_base_url_+"classes/Master.php?f=delete_room",
+			url:_base_url_+"Master.php?f=delete_room",
 			method:"POST",
 			data:{id: $id},
 			dataType:"json",

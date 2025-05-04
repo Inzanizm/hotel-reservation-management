@@ -1482,13 +1482,17 @@ document.addEventListener('click', function (e) {
     const totalAmount = price + vat;
 
     const formData = new FormData();
+    const randomRef = Math.floor(Math.random() * 1e13).toString().padStart(13, '0');
     formData.append('action', 'submit_reservation');
     formData.append('check_in_date', checkIn);
     formData.append('check_out_date', checkOut);
     formData.append('total_guests', totalGuests);
     formData.append('reservation_status_id', 2);
     formData.append('total_amount', totalAmount);
-    formData.append('confirmed_by', 2); // Hardcoded
+    formData.append('confirmed_by', 2);
+    formData.append('method', 'Gcash');
+    formData.append('payment_status_id', 2);
+    formData.append('reference_number', randomRef); // Hardcoded
      // Hardcoded
 
     fetch('submit_reservation.php', {
@@ -1506,7 +1510,47 @@ document.addEventListener('click', function (e) {
     });
   }
 });
+document.addEventListener('click', function (e) {
+  if (e.target.classList.contains('pay-now-btn')) {
+    const checkIn = checkInDate ? formatDateForBackend(checkInDate) : null;
+    const checkOut = checkOutDate ? formatDateForBackend(checkOutDate) : null;
+    const { totalAdults, totalChildren } = getGuestCount();
+    const totalGuests = totalAdults + totalChildren;
 
+    const villaName = document.querySelector('.villa-name')?.textContent || 'Unknown Villa';
+    const price = parseFloat(document.querySelector('.price-row span:last-child')?.textContent.replace(/[^\d.]/g, '')) || 0;
+    const vat = price * 0.04;
+    const totalAmount = price + vat;
+
+    const formData = new FormData();
+    const randomRef = Math.floor(Math.random() * 1e13).toString().padStart(13, '0');
+    formData.append('action', 'submit_reservation');
+    formData.append('check_in_date', checkIn);
+    formData.append('check_out_date', checkOut);
+    formData.append('total_guests', totalGuests);
+    formData.append('reservation_status_id', 2);
+    formData.append('total_amount', totalAmount);
+    formData.append('confirmed_by', 2);
+    formData.append('method', 'Gcash');
+    formData.append('payment_status_id', 1);
+    formData.append('reference_number', randomRef); // Hardcoded
+     // Hardcoded
+
+    fetch('submit_reservation.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+      alert('Reservation submitted successfully!');
+      // You can redirect or update UI here
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Something went wrong.');
+    });
+  }
+});
 function formatDateForBackend(dateStr) {
   // Converts to YYYY-MM-DD
   const date = new Date(dateStr);

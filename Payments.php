@@ -9,6 +9,8 @@ $sql = "
         g.contact_number,
         CONCAT(g.fname, ' ', g.lname) AS fullname,
         p.amount_paid,
+        p.payment_status_id,
+        p.reference_number,
         p.method,
         ps.status_name
     FROM payments_tb p
@@ -36,6 +38,7 @@ $result = $connection->query($sql);
                             <th>Amount Paid</th>
                             <th>Payment Status</th>
                             <th>Payment Method</th>
+                            <th>Reference Number</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
@@ -48,16 +51,21 @@ $result = $connection->query($sql);
                                     <td><?= htmlspecialchars($row['contact_number']) ?></td>
                                     <td>₱<?= number_format($row['amount_paid'], 2) ?></td>
                                     <td>
-                                        <span class="badge bg-<?php
-                                            $badge = 'secondary';
-                                            if ($row['status_name'] == 'Paid' || 'Refund') $badge = 'success';
-                                            elseif ($row['status_name'] == 'Pending') $badge = 'warning';
-                                            echo "<span class='badge bg-$badge'>{$row['status_name']}</span>";
-                                        ?>
-                                        </span>
+                                    <?php
+                                        $badge = match ((int)$row['payment_status_id']) {
+                                            1, 3 => 'success',   // Paid or Refund
+                                            2    => 'warning',   // Pending
+                                            4    => 'danger',    // Failed
+                                            default => 'secondary',
+                                        };      
+                                    ?>
+                                    <span class="badge bg-<?= $badge ?>"><?= htmlspecialchars($row['status_name']) ?></span>                    
                                     </td>
                                     <td>
-                                        <a href="generate_invoice.php?guest=<?= urlencode($row['fullname']) ?>" class="btn btn-sm btn-secondary">Invoice</a>
+                                        <?= htmlspecialchars($row['method']) ?>   
+                                    </td>
+                                    <td>
+                                        <?= htmlspecialchars($row['reference_number']) ?>
                                     </td>
                                     <td class="text-center">
                                         <a href="#" class="text-primary me-2" title="Edit"><i class="fas fa-edit fa-lg"></i></a>

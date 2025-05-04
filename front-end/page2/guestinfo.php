@@ -49,28 +49,6 @@ if (isset($_POST['submit'])) {
     }
 }
 
-// $sql = "SELECT check_in AS summary_date, COUNT(*) AS total_bookings, SUM(guests) AS total_guests 
-//         FROM bookings 
-//         GROUP BY check_in";
-
-// $result = $conn->query($sql);
-
-// if ($result->num_rows > 0) {
-//     while($row = $result->fetch_assoc()) {
-//         $summary_date = $row['summary_date'];
-//         $total_bookings = $row['total_bookings'];
-//         $total_guests = $row['total_guests'];
-
-//         // Insert summarized data into booking_summary
-//         $insert_sql = "INSERT INTO booking_summary (summary_date, total_bookings, total_guests)
-//                        VALUES ('$summary_date', $total_bookings, $total_guests)";
-        
-//         $conn->query($insert_sql);
-//     }
-//     echo "Summary inserted successfully.";
-// } else {
-//     echo "No bookings found.";
-// }
 
 
 ?>

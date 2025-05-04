@@ -91,17 +91,17 @@ $searchQuery = $searchTerm ? "WHERE CONCAT(fname, ' ', lname) LIKE '%$searchTerm
                             <?php 
                                 // Display reservation status with color-coded badges
                                 switch ($row['reservation_status_id']){
-                                    case 0:
-                                        echo '<span class="rounded-pill badge badge-secondary col-9">Pending</span>';
-                                        break;
                                     case 1:
-                                        echo '<span class="rounded-pill badge badge-primary col-9" style="color:white;background:green;text-align:center;">Confirmed</span>';
+                                        echo '<span class="rounded-pill badge badge-primary col-9">Completed</span>';
                                         break;
                                     case 2:
-                                        echo '<span class="rounded-pill badge badge-danger col-9">Cancelled</span>';
+                                        echo '<span class="rounded-pill badge badge-secondary col-9" style="color:white;background:green;text-align:center;">Pending</span>';
                                         break;
                                     case 3:
-                                        echo '<span class="rounded-pill badge badge-success col-9">Completed</span>';
+                                        echo '<span class="rounded-pill badge badge-success col-9">Confirmed</span>';
+                                        break;
+                                    case 4:
+                                        echo '<span class="rounded-pill badge badge-danger col-9">Cancelled</span>';
                                         break;
                                 }
                             ?>
