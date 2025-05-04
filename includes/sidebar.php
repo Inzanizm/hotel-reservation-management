@@ -65,7 +65,7 @@ $page = substr($_SERVER['SCRIPT_NAME'], strrpos($_SERVER['SCRIPT_NAME'], "/")+1)
           <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-symbols-rounded opacity-10">table_view</i>
             </div>
-            <span class="nav-link-text ms-1">Email Inquiry</span>
+            <span class="nav-link-text ms-1">Email Inquiry & FAQs</span>
           </a>
         </li>
       </ul>
