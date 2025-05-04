@@ -145,4 +145,3 @@ if(isset($_GET['room_id'])){
         })
     })
 </script>
-<?php include('includes/footer.php'); ?>

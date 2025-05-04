@@ -3,7 +3,7 @@
 <div class="container mt-4">
     <div class="card card-outline card-primary">
         <div class="card-header">
-            <h3 class="card-title mb-0">Guest Inquiries</h3>
+            <h3 class="card-title mb-0">Email Inquiries</h3>
         </div>
         <div class="card-body">
             <?php
@@ -78,5 +78,10 @@
 <style>
     .table td, .table th {
         vertical-align: middle;
+    }
+    .card-title{
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
     }
 </style>

@@ -75,4 +75,10 @@ $result = $connection->query($sql);
         opacity: 0.7;
         transition: 0.2s ease;
     }
+
+    .card-title{
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+    }
 </style>
