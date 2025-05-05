@@ -1,9 +1,20 @@
 <?php include('includes/header.php'); ?>
 <?php
 
+// Handle Delete (Archive) Action
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_btn'])) {
+    $archiveId = intval($_POST['archive_id']);
+    $deleteSql = "DELETE FROM guests_tb WHERE guests_id = $archiveId";
+    if ($connection->query($deleteSql)) {
+        echo "<script>alert('Guest deleted successfully.'); window.location.href='guest-info.php';</script>";
+    } else {
+        echo "<script>alert('Error deleting guest.');</script>";
+    }
+}
 // Corrected SQL to fetch guest information
 $sql = "
     SELECT 
+        g.guests_id,
         g.fname,
         g.lname,
         g.email,
@@ -54,8 +65,20 @@ $result = $connection->query($sql);
                                         <?php endif; ?>
                                     </td> <!-- Placeholder for status -->
                                     <td class="text-center">
-                                        <a href="#" class="text-primary me-2" title="Edit"><i class="fas fa-edit fa-lg"></i></a>
-                                        <a href="#" class="text-danger" title="Archive"><i class="fas fa-archive fa-lg"></i></a>
+                                    <form method="post" action="edit_guest.php" class="d-inline">
+                                     <input type="hidden" name="edit_id" value="<?= $row['guests_id'] ?>">
+                                       <button type="submit" class="btn btn-sm btn-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                     </button>
+                                    </form>
+
+                                    <!-- Archive Button -->
+                                    <form method="post" action="" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this guest?');">
+                                    <input type="hidden" name="archive_id" value="<?= $row['guests_id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger" name="archive_btn" title="Archive">
+                                    <i class="fas fa-archive"></i>
+                                    </button>
+                                    </form>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>

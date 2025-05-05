@@ -5,6 +5,15 @@
 // Get current page from URL, default is page 1
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_btn'])) {
+    $reservationId = intval($_POST['reservation_id']);
+    $deleteSql = "DELETE FROM reservations_tb WHERE reservation_id = $reservationId";
+    if ($connection->query($deleteSql)) {
+        echo "<script>alert('Reservation delete successfully.');window.location.href='reservation.php' </script>";
+    } else {
+        echo "<script>alert('Error delete reservation.');</script>";
+    }
+}
 
 $searchTerm = isset($_GET['search']) ? trim($connection->real_escape_string($_GET['search'])) : '';
 $searchQuery = "";
@@ -75,10 +84,54 @@ $qry = $connection->query("SELECT r.*, g.fname, g.lname
                             ?>
                         </td>
                         <td align="center">
-                            <a href="#" class="text-primary me-2" title="View"><i class="fas fa-eye fa-lg"></i></a>
-                            <a href="#" class="text-danger" title="Archive"><i class="fas fa-archive fa-lg"></i></a>
+                                     <input type="hidden" name="editreservation_id" value="<?= $row['reservation_id'] ?>">
+                                       <button type="button" class="btn btn-sm btn-primary" title="Edit" data-bs-toggle="modal" data-bs-target="#respondModal<?= $row['reservation_id'] ?>">
+                                    <i class="fas fa-edit"></i>
+                                     </button>
+
+                                    <!-- Archive Button -->
+                                    <form method="post" action="" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this reservation?');">
+                                    <input type="hidden" name="reservation_id" value="<?= $row['reservation_id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger" name="archive_btn" title="Archive">
+                                    <i class="fas fa-archive"></i>
                         </td>
                     </tr>
+
+                    <div class="modal fade" id="respondModal<?= $row['reservation_id'] ?>" tabindex="-1" aria-labelledby="respondModalLabel<?= $row['reservation_id'] ?>" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!-- Show Full Name in Modal Title -->
+                <h5 class="modal-title" id="respondModalLabel<?= $row['reservation_id'] ?>">
+                    Update Status for <?= ucwords($row['fname'] . ' ' . $row['lname']) ?>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="edit_reservation.php">
+                <div class="modal-body">
+                    <!-- Hidden ID -->
+                    <input type="hidden" name="reservation_id" value="<?= $row['reservation_id'] ?>">
+
+                    <!-- Dropdown to Change Reservation Status -->
+                    <div class="mb-3">
+                        <label for="statusSelect<?= $row['reservation_id'] ?>" class="form-label">Reservation Status</label>
+                        <select class="form-select" id="statusSelect<?= $row['reservation_id'] ?>" name="reservation_status_id" required>
+                            <option value="1" <?= $row['reservation_status_id'] == 1 ? 'selected' : '' ?>>Completed</option>
+                            <option value="2" <?= $row['reservation_status_id'] == 2 ? 'selected' : '' ?>>Pending</option>
+                            <option value="3" <?= $row['reservation_status_id'] == 3 ? 'selected' : '' ?>>Confirmed</option>
+                            <option value="4" <?= $row['reservation_status_id'] == 4 ? 'selected' : '' ?>>Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Modal Footer Buttons -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="" class="btn btn-primary">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
                     <?php endwhile; ?>
                 </tbody>
             </table>
@@ -100,6 +153,8 @@ $qry = $connection->query("SELECT r.*, g.fname, g.lname
                 });
             </script>
         </div>
+        
+        
     </div>
 </div>
 
@@ -441,6 +496,7 @@ if (isset($_GET['date'])) {
 </script>
 
 <!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

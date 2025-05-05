@@ -25,7 +25,6 @@ $result = $connection->query($sql);
     <div class="card card-outline card-primary">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title mb-0">Guest Information</h3>
-            <a href="#" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Add Guest</a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -53,10 +52,10 @@ $result = $connection->query($sql);
                                     <td>
                                     <?php
                                         $badge = match ((int)$row['payment_status_id']) {
-                                            1, 3 => 'success',   // Paid or Refund
+                                            1, 3 => 'success',   // Paid or Refunded
                                             2    => 'warning',   // Pending
                                             4    => 'danger',    // Failed
-                                            default => 'secondary',
+                                            default => 'secondary'
                                         };      
                                     ?>
                                     <span class="badge bg-<?= $badge ?>"><?= htmlspecialchars($row['status_name']) ?></span>                    

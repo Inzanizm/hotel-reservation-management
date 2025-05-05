@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $response_message = $_POST['response_message'];
     
     // Assuming a logged-in user, get the responder_id (you should replace this with actual logged-in user logic)
-    $responder_id = 1;  // Replace with the actual user ID from your session or authentication system
+    $responder_id = 2;  // Replace with the actual user ID from your session or authentication system
 
     // Get the guest's email from the database
     $sql = "SELECT sender_email, sender_name, message_body, inquiry_type FROM inquiries_tb WHERE inquiry_id = ?";
@@ -64,11 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
                 //Server settings
                 $mail->isSMTP();
-                $mail->Host = 'smtp.yourmailserver.com';  // Set the SMTP server to use
+                $mail->Host = 'sandbox.smtp.mailtrap.io';  // Set the SMTP server to use
                 $mail->SMTPAuth = true;
-                $mail->Username = 'your_email@example.com';  // SMTP username
-                $mail->Password = 'your_email_password';  // SMTP password
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Username = '9da3dac8b7d8aa';  // SMTP username
+                $mail->Password = 'c49097f0da5dca';  // SMTP password
+                $mail->SMTPSecure = 'tls';
                 $mail->Port = 587;  // TCP port for TLS
 
                 //Recipients
@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
             // Redirect back to the inquiries page or show a success message
-            header("Location: email_inquiries.php?status=2");
+            header("Location: inquiries_list.php");
             exit();
         } else {
             // Handle errors if insert fails

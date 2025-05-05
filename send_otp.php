@@ -30,8 +30,8 @@ $mail = new PHPMailer;
 $mail->isSMTP();
 $mail->Host = 'sandbox.smtp.mailtrap.io'; // Or smtp.gmail.com
 $mail->SMTPAuth = true;
-$mail->Username = '4d301f304eaac5';
-$mail->Password = '255e3f739f30b4';
+$mail->Username = '9da3dac8b7d8aa';
+$mail->Password = 'c49097f0da5dca';
 $mail->SMTPSecure = 'tls';
 $mail->Port = 587;
 
