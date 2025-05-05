@@ -114,34 +114,43 @@ $total_guests_today = $row['total'] ?? 0;
 
 ?>
 
-<?php //REVENUE CARD
+<?php // REVENUE CARD
 // Today's Date
 $today = date('Y-m-d');
 $monthStart = date('Y-m-01');
 $weekStart = date('Y-m-d', strtotime("last sunday"));
 
-
 // Total Revenue Today
 $revenueToday = 0;
-$sql = "SELECT SUM(amount_paid) AS total FROM payments_tb WHERE DATE(date_paid) = '$today'";
+$sql = "
+    SELECT SUM(p.amount_paid) AS total 
+    FROM payments_tb p
+    JOIN payment_status_tb ps ON p.payment_status_id = ps.payment_status_id
+    WHERE DATE(p.date_paid) = '$today' AND ps.status_name = 'paid'";
 $result = $connection->query($sql);
 if ($row = $result->fetch_assoc()) {
     $revenueToday = $row['total'] ?? 0;
 }
 
-
 // Total Revenue This Week
 $revenueWeek = 0;
-$sql = "SELECT SUM(amount_paid) AS total FROM payments_tb WHERE date_paid >= '$weekStart' AND date_paid <= '$today'";
+$sql = "
+    SELECT SUM(p.amount_paid) AS total 
+    FROM payments_tb p
+    JOIN payment_status_tb ps ON p.payment_status_id = ps.payment_status_id
+    WHERE p.date_paid >= '$weekStart' AND p.date_paid <= '$today' AND ps.status_name = 'paid'";
 $result = $connection->query($sql);
 if ($row = $result->fetch_assoc()) {
     $revenueWeek = $row['total'] ?? 0;
 }
 
-
 // Total Revenue This Month
 $revenueMonth = 0;
-$sql = "SELECT SUM(amount_paid) AS total FROM payments_tb WHERE date_paid >= '$monthStart' AND date_paid <= '$today'";
+$sql = "
+    SELECT SUM(p.amount_paid) AS total 
+    FROM payments_tb p
+    JOIN payment_status_tb ps ON p.payment_status_id = ps.payment_status_id
+    WHERE p.date_paid >= '$monthStart' AND p.date_paid <= '$today' AND ps.status_name = 'paid'";
 $result = $connection->query($sql);
 if ($row = $result->fetch_assoc()) {
     $revenueMonth = $row['total'] ?? 0;

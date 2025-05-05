@@ -17,16 +17,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' ) {
     $guestResult = $connection->query($guestSql);
     $guestId = $guestResult->fetch_assoc()['guests_id'];
 
-    $reservationSql = "SELECT reservation_id FROM reservations_tb ORDER BY reservation_id DESC LIMIT 1";
-    $reservationResult = $connection->query($reservationSql);
-    $reservationId = $reservationResult->fetch_assoc()['reservation_id'];
+   
 
     // Insert into reservations_tb
     $stmt = $connection->prepare("INSERT INTO reservations_tb (guest_id, reservation_status_id, check_in_date, check_out_date, total_guests, total_amount, confirmed_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("iissidi", $guestId, $statusId, $checkIn, $checkOut, $totalGuests, $totalAmount, $confirmedBy);
-   
+    if ($stmt->execute()) {
+        echo "Reservation inserted successfully.";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+    $reservationSql = "SELECT reservation_id FROM reservations_tb ORDER BY reservation_id DESC LIMIT 1";
+    $reservationResult = $connection->query($reservationSql);
+    $reservationId = $reservationResult->fetch_assoc()['reservation_id'];
     $stmt = $connection->prepare("INSERT INTO payments_tb (reservation_id, amount_paid, method, payment_status_id, reference_number) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("idsis", $reservationId, $totalAmount, $method, $paymentStatusId, $referenceNumber);
+
     if ($stmt->execute()) {
         echo "Reservation inserted successfully.";
     } else {
