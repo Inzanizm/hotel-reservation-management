@@ -191,4 +191,3 @@ if(isset($_GET['f']) && $_GET['f'] == 'save_room') {
         })
     })
 </script>
-<?php include('includes/footer.php'); ?>

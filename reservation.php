@@ -1,49 +1,30 @@
 <?php include('includes/header.php'); ?>
 
 <?php
-// Set the number of records to show per page
-$limit = 10;
 
 // Get current page from URL, default is page 1
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
-// Calculate the offset for SQL LIMIT
-$offset = ($page - 1) * $limit;
 
-// Get search term from URL, sanitize it
-$searchTerm = isset($_GET['search']) ? $connection->real_escape_string($_GET['search']) : '';
-$searchQuery = $searchTerm ? "WHERE CONCAT(fname, ' ', lname) LIKE '%$searchTerm%'" : '';
+$searchTerm = isset($_GET['search']) ? trim($connection->real_escape_string($_GET['search'])) : '';
+$searchQuery = "";
+
+
+$qry = $connection->query("SELECT r.*, g.fname, g.lname 
+    FROM reservations_tb r 
+    JOIN guests_tb g ON r.guest_id = g.guests_id 
+    $searchQuery 
+    ORDER BY r.reservation_status_id ASC, UNIX_TIMESTAMP(r.created_date) DESC");
 ?>
 
 <div class="container">
     <div class="card card-outline card-primary">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title">Reservation Management</h3>
-            <!-- <div class="filter-search-container"> -->
-                <button class="btn btn-outline-secondary" type="submit">
-                    <i class="fa fa-filter"></i>
-                </button>
-                <!-- Search bar form for filtering reservations by guest name -->
-                <div class="search-bar-container">
-                    <form method="get" action="" class="form input-group">
-                        <input 
-                            type="text" 
-                            name="search" 
-                            class="form-control" 
-                            placeholder="Search by Guest Name"
-                            value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>" 
-                        >
-                        <span class="input-group-text">
-                            <i class="fa fa-search"></i>
-                        </span>
-                    </form>
-                </div>
-            <!-- </div> -->
         </div>
-
         <div class="card-body">
             <!-- Reservations Table -->
-            <table class="table table-hover table-striped table-bordered">
+            <table id="reservationsTable" class="table table-hover table-striped table-bordered">
                 <colgroup>
                     <col width="5%">
                     <col width="20%">
@@ -65,19 +46,6 @@ $searchQuery = $searchTerm ? "WHERE CONCAT(fname, ' ', lname) LIKE '%$searchTerm
                 <tbody>
                     <?php 
                         $i = 1;
-
-                        // Refetch search query for security
-                        $searchQuery = isset($_GET['search']) && !empty($_GET['search']) 
-                            ? "WHERE CONCAT(fname, ' ', lname) LIKE '%" . $connection->real_escape_string($_GET['search']) . "%'" 
-                            : "";
-
-                        // SQL query to fetch reservation and guest info
-                        $qry = $connection->query("SELECT r.*, g.fname, g.lname 
-                            FROM reservations_tb r 
-                            JOIN guests_tb g ON r.guest_id = g.guests_id 
-                            $searchQuery 
-                            ORDER BY r.reservation_status_id ASC, UNIX_TIMESTAMP(r.created_date) DESC 
-                            LIMIT $limit OFFSET $offset");
 
                         // Loop through the results
                         while ($row = $qry->fetch_assoc()):
@@ -103,11 +71,11 @@ $searchQuery = $searchTerm ? "WHERE CONCAT(fname, ' ', lname) LIKE '%$searchTerm
                                     case 4:
                                         echo '<span class="rounded-pill badge badge-danger col-9">Cancelled</span>';
                                         break;
-                                }
+                                }                                
                             ?>
                         </td>
                         <td align="center">
-                            <a href="#" class="text-primary me-2" title="Edit"><i class="fas fa-eye fa-lg"></i></a>
+                            <a href="#" class="text-primary me-2" title="View"><i class="fas fa-eye fa-lg"></i></a>
                             <a href="#" class="text-danger" title="Archive"><i class="fas fa-archive fa-lg"></i></a>
                         </td>
                     </tr>
@@ -115,42 +83,22 @@ $searchQuery = $searchTerm ? "WHERE CONCAT(fname, ' ', lname) LIKE '%$searchTerm
                 </tbody>
             </table>
 
-            <?php 
-            // Pagination: get total number of matching records
-            $totalRecordsQuery = $connection->query("SELECT COUNT(*) AS total FROM reservations_tb r JOIN guests_tb g ON r.guest_id = g.guests_id $searchQuery");
-            $totalRecords = $totalRecordsQuery->fetch_assoc()['total'];
-            $totalPages = ceil($totalRecords / $limit);
-            ?>
-
-            <!-- Pagination Controls -->
-            <div class="pagination-container" style="text-align:center; margin-top:20px;">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
-                        <!-- Previous Page -->
-                        <li class="page-item <?= ($page == 1) ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $page - 1 ?>&search=<?= htmlspecialchars($searchTerm) ?>" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-
-                        <!-- Page Numbers -->
-                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                            <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
-                                <a class="page-link" href="?page=<?= $i ?>&search=<?= htmlspecialchars($searchTerm) ?>">
-                                    <?= $i ?>
-                                </a>
-                            </li>
-                        <?php endfor; ?>
-
-                        <!-- Next Page -->
-                        <li class="page-item <?= ($page == $totalPages) ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $page + 1 ?>&search=<?= htmlspecialchars($searchTerm) ?>" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+            <script>
+                $(document).ready(function () {
+                    $('#reservationsTable').DataTable({
+                        paging: true,
+                        lengthChange: true,
+                        searching: true, // enables live search
+                        ordering: true,
+                        info: true,
+                        autoWidth: true,
+                        responsive: true,
+                        pageLength: 10,
+                        dom: 'Bfrtip',
+                        buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+                    });
+                });
+            </script>
         </div>
     </div>
 </div>
@@ -192,10 +140,6 @@ $bookedDates = array_unique($bookedDates);
 </div>
 
 <style>
-    .btn-outline-secondary {
-        /* margin-right: 330px; */
-        margin-top: 10px;
-}
    .calendar-container {
     max-width: 1000px;
     margin: 0 auto;
@@ -266,16 +210,6 @@ $bookedDates = array_unique($bookedDates);
     font-weight: bold;
 }
 
-.available {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.calendar-day.disabled {
-    color: #bbb;
-    cursor: not-allowed;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .calendar {
@@ -299,103 +233,10 @@ $bookedDates = array_unique($bookedDates);
     }
 }
 
-    .search-bar-container {
-    /* position: absolute; */
-    top: 20px;
-    right: 30px;
-    width: 30%;
-    max-width: 400px;
-    z-index: 1000;
-}
-
-.search-bar-container .input-group {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    border-radius: 30px;
-    overflow: hidden;
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-    background-color: #fff;
-    display: flex;
-}
-
-.search-bar-container .input-group:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-    transform: translateY(-2px);
-}
-
-.search-bar-container .form-control {
-    border: none;
-    border-radius: 0;
-    padding-left: 20px;  /* Added padding for the icon */
-    font-size: 16px;
-    height: 45px;
-    flex-grow: 1;
-    transition: all 0.3s ease;
-}
-
-.search-bar-container .form-control:focus {
-    box-shadow: 0 0 12px rgba(0, 123, 255, 0.6);
-    border-color: #007bff;
-    transform: scale(1.02);
-    outline: none;
-}
-
-.search-bar-container .form-control:hover {
-    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
-    background-color: #f9f9f9;
-}
-
-.input-group-text {
-    color: white;
-    background-color: initial;
-    border: none;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    right: 1rem!important;
-    transition: background-color 0.3s ease;
-    height: 45px;
-    position: absolute; /* Position the icon inside the input group */
-    right: 10px; /* Move it to the right */
-    top: 50%; /* Vertically center the icon */
-    transform: translateY(-50%); /* Adjust for perfect vertical centering */
-}
-
-.input-group-text i {
-    font-size: 18px;
-}
-
-.pagination-container {
-        margin-top: 20px;
-    }
-
-    .pagination .page-item {
-        margin: 0 5px;
-    }
-
-    .pagination .page-link {
-        background-color: #007bff;
-        color: white;
-        border-radius: 5px;
-        padding: 8px 15px;
-        font-size: 16px;
-        transition: background-color 0.3s ease;
-    }
-
-    .pagination .page-link:hover {
-        background-color: #0056b3;
-        color: #fff;
-    }
-
-    .pagination .page-item.active .page-link {
-        background-color: #0056b3;
-        color: white;
-        border: none;
-    }
-
-    .pagination .page-item.disabled .page-link {
-        background-color: #e9ecef;
-        color: #6c757d;
-        pointer-events: none;
+    .card-title{
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
     }
 
     .booked {
@@ -598,6 +439,23 @@ if (isset($_GET['date'])) {
         });
     });
 </script>
+
+<!-- Scripts -->
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
 
 <!-- Footer of the page -->
 <?php include('includes/footer.php'); ?>
