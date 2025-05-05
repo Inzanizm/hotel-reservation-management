@@ -24,7 +24,7 @@ if (isset($_POST['login'])) {
         $user = $res->fetch_assoc();
 
         // Use password_verify for security (ensure passwords are hashed in DB)
-        if (password_verify($password, $user['password'])) {
+        if ($password === $user['password']) {
             // Set session variables
             $_SESSION['userid'] = $user['userid']; // Save user id in session
             $_SESSION['email'] = $email;

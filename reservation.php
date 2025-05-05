@@ -45,7 +45,7 @@ $qry = $connection->query("SELECT r.*, g.fname, g.lname
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Reservoir</th> <!-- Should this be 'Guest Name'? -->
+                        <th>Guest Name</th> <!-- Should this be 'Guest Name'? -->
                         <th>Check-in</th>
                         <th>Check-out</th>
                         <th>Status</th>
@@ -99,63 +99,44 @@ $qry = $connection->query("SELECT r.*, g.fname, g.lname
                     </tr>
 
                     <div class="modal fade" id="respondModal<?= $row['reservation_id'] ?>" tabindex="-1" aria-labelledby="respondModalLabel<?= $row['reservation_id'] ?>" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <!-- Show Full Name in Modal Title -->
-                <h5 class="modal-title" id="respondModalLabel<?= $row['reservation_id'] ?>">
-                    Update Status for <?= ucwords($row['fname'] . ' ' . $row['lname']) ?>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="POST" action="edit_reservation.php">
-                <div class="modal-body">
-                    <!-- Hidden ID -->
-                    <input type="hidden" name="reservation_id" value="<?= $row['reservation_id'] ?>">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <!-- Show Full Name in Modal Title -->
+                                    <h5 class="modal-title" id="respondModalLabel<?= $row['reservation_id'] ?>">
+                                        Update Status for <?= ucwords($row['fname'] . ' ' . $row['lname']) ?>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <form method="POST" action="edit_reservation.php">
+                                    <div class="modal-body">
+                                        <!-- Hidden ID -->
+                                        <input type="hidden" name="reservation_id" value="<?= $row['reservation_id'] ?>">
 
-                    <!-- Dropdown to Change Reservation Status -->
-                    <div class="mb-3">
-                        <label for="statusSelect<?= $row['reservation_id'] ?>" class="form-label">Reservation Status</label>
-                        <select class="form-select" id="statusSelect<?= $row['reservation_id'] ?>" name="reservation_status_id" required>
-                            <option value="1" <?= $row['reservation_status_id'] == 1 ? 'selected' : '' ?>>Completed</option>
-                            <option value="2" <?= $row['reservation_status_id'] == 2 ? 'selected' : '' ?>>Pending</option>
-                            <option value="3" <?= $row['reservation_status_id'] == 3 ? 'selected' : '' ?>>Confirmed</option>
-                            <option value="4" <?= $row['reservation_status_id'] == 4 ? 'selected' : '' ?>>Cancelled</option>
-                        </select>
+                                        <!-- Dropdown to Change Reservation Status -->
+                                        <div class="mb-3">
+                                            <label for="statusSelect<?= $row['reservation_id'] ?>" class="form-label">Reservation Status</label>
+                                            <select class="form-select" id="statusSelect<?= $row['reservation_id'] ?>" name="reservation_status_id" required>
+                                                <option value="1" <?= $row['reservation_status_id'] == 1 ? 'selected' : '' ?>>Completed</option>
+                                                <option value="2" <?= $row['reservation_status_id'] == 2 ? 'selected' : '' ?>>Pending</option>
+                                                <option value="3" <?= $row['reservation_status_id'] == 3 ? 'selected' : '' ?>>Confirmed</option>
+                                                <option value="4" <?= $row['reservation_status_id'] == 4 ? 'selected' : '' ?>>Cancelled</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Modal Footer Buttons -->
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" name="update_status" class="btn btn-primary">Update Status</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <!-- Modal Footer Buttons -->
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" name="update_status" class="btn btn-primary">Update Status</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
                     <?php endwhile; ?>
                 </tbody>
             </table>
-
-            <script>
-                $(document).ready(function () {
-                    $('#reservationsTable').DataTable({
-                        paging: true,
-                        lengthChange: true,
-                        searching: true, // enables live search
-                        ordering: true,
-                        info: true,
-                        autoWidth: true,
-                        responsive: true,
-                        pageLength: 10,
-                        dom: 'Bfrtip',
-                        buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
-                    });
-                });
-            </script>
         </div>
-        
-        
     </div>
 </div>
 
@@ -493,7 +474,6 @@ if (isset($_GET['date'])) {
 </script>
 
 <!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -509,6 +489,22 @@ if (isset($_GET['date'])) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+
+<!-- Initialize DataTables -->
+<script>
+    $(document).ready(function () {
+        $('#reservationsTable').DataTable({
+            paging: true,
+            lengthChange: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            autoWidth: false,
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+</script>
 
 <!-- Footer of the page -->
 <?php include('includes/footer.php'); ?>

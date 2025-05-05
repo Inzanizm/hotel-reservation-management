@@ -8,18 +8,41 @@ if (session_status() == PHP_SESSION_NONE) {
 <?php
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Handle delete
+    // Handle delete action
     if (isset($_POST['archive_btn']) && isset($_POST['userid'])) {
         $userId = (int)$_POST['userid'];
+
+        // Delete query
         $deleteSql = "DELETE FROM users_tb WHERE userid = $userId";
         if ($connection->query($deleteSql)) {
+            // Log the deletion action
+            $operation_name = 'Delete User';
+            $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
+            $operation_type_stmt->bind_param("s", $operation_name);
+            $operation_type_stmt->execute();
+            $operation_type_res = $operation_type_stmt->get_result();
+
+            if ($operation_type_res->num_rows > 0) {
+                $operation_type = $operation_type_res->fetch_assoc();
+
+                // Log the operation in the audit log table
+                $user_id = $_SESSION['userid'] ?? null;  // Make sure user is logged in
+                if ($user_id) {
+                    $log_stmt = $connection->prepare("INSERT INTO audit_log_tb (user_id, operation_type_id, timestamp) VALUES (?, ?, NOW())");
+                    $log_stmt->bind_param("ii", $user_id, $operation_type['operation_type_id']);
+                    $log_stmt->execute();
+                    $log_stmt->close();
+                }
+            }
+
+            $operation_type_stmt->close();
             echo "<script>alert('User deleted successfully.');window.location.href='user-management.php';</script>";
         } else {
             echo "<script>alert('Error deleting user.');</script>";
         }
     }
 
-    // Handle update
+    // Handle update action
     elseif (isset($_POST['edit_user'])) {
         $userid = (int)$_POST['userid'];
         $fname = $_POST['fname'];
@@ -30,19 +53,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $role_id = (int)$_POST['role_id'];
         $active = (int)$_POST['active'];
 
+        // Update query
         $stmt = $connection->prepare("
             UPDATE users_tb 
             SET fname = ?, mname = ?, lname = ?, email = ?, contact_number = ?, role_id = ?, active = ? 
             WHERE userid = ?
         ");
-
         $stmt->bind_param("ssssiiii", $fname, $mname, $lname, $email, $contact_number, $role_id, $active, $userid);
 
         if ($stmt->execute()) {
+            // Log the update action
+            $operation_name = 'Update User Details';
+            $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
+            $operation_type_stmt->bind_param("s", $operation_name);
+            $operation_type_stmt->execute();
+            $operation_type_res = $operation_type_stmt->get_result();
+
+            if ($operation_type_res->num_rows > 0) {
+                $operation_type = $operation_type_res->fetch_assoc();
+
+                // Log the operation in the audit log table
+                $user_id = $_SESSION['userid'] ?? null;  // Ensure user is logged in
+                if ($user_id) {
+                    $log_stmt = $connection->prepare("INSERT INTO audit_log_tb (user_id, operation_type_id, timestamp) VALUES (?, ?, NOW())");
+                    $log_stmt->bind_param("ii", $user_id, $operation_type['operation_type_id']);
+                    $log_stmt->execute();
+                    $log_stmt->close();
+                }
+            }
+
+            $operation_type_stmt->close();
             echo "<script>alert('User updated successfully.');location.href='user-management.php';</script>";
         } else {
             echo "<script>alert('Error updating user.');</script>";
         }
+        $stmt->close();
     }
 }
 

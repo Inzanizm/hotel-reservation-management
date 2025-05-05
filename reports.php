@@ -20,7 +20,7 @@ $result = $connection->query($sql);
 <div class="container mt-4">
     <div class="card card-outline card-primary">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title mb-0">Reports</h3>
+            <h3 class="card-title mb-0">Audit Log</h3>
         </div>
         <div class="card-body">
             <?php if ($result && mysqli_num_rows($result) > 0): ?>
