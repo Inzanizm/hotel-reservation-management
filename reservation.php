@@ -347,11 +347,7 @@ $todayDate = date('Y-m-d');
 <script>
     // Initialize the current displayed month
     let currentMonth = new Date().getMonth();
-    
-    // Pass PHP year variable into JavaScript
-    const year = <?php echo $year; ?>;
-    
-    // Convert booked dates array from PHP to JavaScript
+    const year = <?php echo json_encode($year); ?>; // Ensure this is properly printed
     const bookedDates = <?php echo json_encode($bookedDates); ?>;
 
     // Change the displayed month by incrementing or decrementing the currentMonth variable

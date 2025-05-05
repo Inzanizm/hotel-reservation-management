@@ -53,6 +53,14 @@ $page = substr($_SERVER['SCRIPT_NAME'], strrpos($_SERVER['SCRIPT_NAME'], "/")+1)
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link text-white <?= $page == "reports.php" ? 'active bg-gradient-dark text-white':''; ?>" href="reports.php">
+          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-symbols-rounded opacity-10">table_view</i>
+            </div>
+            <span class="nav-link-text ms-1">Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link text-white <?= $page == "user-management.php" ? 'active bg-gradient-dark text-white':''; ?>" href="user-management.php">
           <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-symbols-rounded opacity-10">table_view</i>
@@ -69,7 +77,7 @@ $page = substr($_SERVER['SCRIPT_NAME'], strrpos($_SERVER['SCRIPT_NAME'], "/")+1)
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white <?= $page == "website_settings.php" ? 'active bg-gradient-dark text-white':''; ?>" href="website_settings.php">
+          <a class="nav-link text-white <?= $page == "settings.php" ? 'active bg-gradient-dark text-white':''; ?>" href="settings.php">
           <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-symbols-rounded opacity-10">table_view</i>
             </div>
@@ -80,7 +88,7 @@ $page = substr($_SERVER['SCRIPT_NAME'], strrpos($_SERVER['SCRIPT_NAME'], "/")+1)
     </div>
     <div class="sidenav-footer position-absolute w-100 bottom-0 ">
       <div class="mx-3">
-        <a class="btn bg-gradient-primary mt-4 w-100" href="index.php" type="button">LOGOUT</a>
+        <a class="btn bg-gradient-primary mt-4 w-100" href="logout.php" type="button">LOGOUT</a>
       </div>
     </div>
   </aside>

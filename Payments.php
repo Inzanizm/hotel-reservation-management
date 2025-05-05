@@ -28,7 +28,7 @@ $result = $connection->query($sql);
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped align-middle">
+                <table id="paymentTable" class="table table-bordered table-striped align-middle">
                     <thead>
                         <tr>
                             <th>Full Name</th>
@@ -79,6 +79,23 @@ $result = $connection->query($sql);
                         <?php endif; ?>
                     </tbody>
                 </table>
+                <!-- Initialize DataTables -->
+                <script>
+                    $(document).ready(function () {
+                        $('#paymentTable').DataTable({
+                            paging: true,
+                            lengthChange: true,
+                            searching: true,
+                            ordering: true,
+                            info: true,
+                            autoWidth: false,
+                            responsive: true,
+                            pageLength: 10,
+                            dom: 'Bfrtip',
+                            buttons: ['copy', 'pdf', 'print']
+                        });
+                    });
+                </script>
             </div>
         </div>
     </div>
@@ -100,3 +117,21 @@ $result = $connection->query($sql);
         color: #007bff;
     }
 </style>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
