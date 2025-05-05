@@ -94,6 +94,7 @@ $qry = $connection->query("SELECT r.*, g.fname, g.lname
                                     <input type="hidden" name="reservation_id" value="<?= $row['reservation_id'] ?>">
                                     <button type="submit" class="btn btn-sm btn-danger" name="archive_btn" title="Archive">
                                     <i class="fas fa-archive"></i>
+                                    </form>
                         </td>
                     </tr>
 
@@ -126,7 +127,7 @@ $qry = $connection->query("SELECT r.*, g.fname, g.lname
                 <!-- Modal Footer Buttons -->
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" name="" class="btn btn-primary">Update Status</button>
+                    <button type="submit" name="update_status" class="btn btn-primary">Update Status</button>
                 </div>
             </form>
         </div>

@@ -65,13 +65,6 @@ $result = $connection->query($sql);
                                         <?php endif; ?>
                                     </td> <!-- Placeholder for status -->
                                     <td class="text-center">
-                                    <form method="post" action="edit_guest.php" class="d-inline">
-                                     <input type="hidden" name="edit_id" value="<?= $row['guests_id'] ?>">
-                                       <button type="submit" class="btn btn-sm btn-primary" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                     </button>
-                                    </form>
-
                                     <!-- Archive Button -->
                                     <form method="post" action="" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this guest?');">
                                     <input type="hidden" name="archive_id" value="<?= $row['guests_id'] ?>">

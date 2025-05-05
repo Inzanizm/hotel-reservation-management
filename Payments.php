@@ -9,6 +9,7 @@ $sql = "
         g.contact_number,
         CONCAT(g.fname, ' ', g.lname) AS fullname,
         p.amount_paid,
+        p.payment_id,
         p.payment_status_id,
         p.reference_number,
         p.method,
@@ -67,10 +68,61 @@ $result = $connection->query($sql);
                                         <?= htmlspecialchars($row['reference_number']) ?>
                                     </td>
                                     <td class="text-center">
-                                        <a href="#" class="text-primary me-2" title="Edit"><i class="fas fa-edit fa-lg"></i></a>
-                                        <a href="#" class="text-danger" title="Archive"><i class="fas fa-archive fa-lg"></i></a>
+                                        <!-- Button to trigger modal -->
+                                        <button type="button"
+                                                class="btn btn-sm btn-primary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#paymentModal<?= $row['payment_id'] ?>"
+                                                title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
                                     </td>
                                 </tr>
+
+                                <div class="modal fade" id="paymentModal<?= $row['payment_id'] ?>" tabindex="-1" aria-labelledby="paymentModalLabel<?= $row['payment_id'] ?>" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <!-- Modal Title with Full Name -->
+                                                <h5 class="modal-title" id="paymentModalLabel<?= $row['payment_id'] ?>">
+                                                    Update Payment Status for <?= ucwords($row['fullname']) ?>
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+
+                                            <!-- Form for Updating Payment -->
+                                            <form method="POST" action="edit_payment.php">
+                                                <div class="modal-body">
+                                                    <!-- Hidden Payment ID -->
+                                                    <input type="hidden" name="payment_id" value="<?= $row['payment_id'] ?>">
+
+                                                    <!-- Amount Paid Display -->
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Amount Paid</label>
+                                                        <input type="text" class="form-control" value="₱<?= number_format($row['amount_paid'], 2) ?>" readonly>
+                                                    </div>
+
+                                                    <!-- Payment Status Dropdown -->
+                                                    <div class="mb-3">
+                                                        <label for="paymentStatusSelect<?= $row['payment_id'] ?>" class="form-label">Payment Status</label>
+                                                        <select class="form-select" id="paymentStatusSelect<?= $row['payment_id'] ?>" name="payment_status_id" required>
+                                                            <option value="1" <?= $row['payment_status_id'] == 1 ? 'selected' : '' ?>>Paid</option>
+                                                            <option value="2" <?= $row['payment_status_id'] == 2 ? 'selected' : '' ?>>Pending</option>
+                                                            <option value="3" <?= $row['payment_status_id'] == 3 ? 'selected' : '' ?>>Refunded</option>
+                                                            <option value="4" <?= $row['payment_status_id'] == 4 ? 'selected' : '' ?>>Failed</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Modal Footer Buttons -->
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" name="update_payment" class="btn btn-primary">Update Payment</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr>

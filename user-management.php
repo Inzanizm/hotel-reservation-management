@@ -1,25 +1,42 @@
 <?php include('includes/header.php'); ?>
 <?php
 
-if (isset($_POST['edit_user'])) {
-    $userid = $_POST['userid'];
-    $fname = $_POST['fname'];
-    $mname = $_POST['mname'];
-    $lname = $_POST['lname'];
-    $email = $_POST['email'];
-    $contact_number = $_POST['contact_number'];
-    $role_id = $_POST['role_id'];
-    $active = $_POST['active'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Handle delete
+    if (isset($_POST['archive_btn']) && isset($_POST['userid'])) {
+        $userId = (int)$_POST['userid'];
+        $deleteSql = "DELETE FROM users_tb WHERE userid = $userId";
+        if ($connection->query($deleteSql)) {
+            echo "<script>alert('User deleted successfully.');window.location.href='user-management.php';</script>";
+        } else {
+            echo "<script>alert('Error deleting user.');</script>";
+        }
+    }
 
-    // Update user details
-    $stmt = $connection->prepare("UPDATE users_tb SET fname = ?, mname = ?, lname = ?, email = ?, contact_number = ?, role_id = ?, active = ? WHERE userid = ?");
-    $stmt->bind_param("sssssiis", $fname, $mname, $lname, $email, $contact_number, $role_id, $active, $userid);
+    // Handle update
+    elseif (isset($_POST['edit_user'])) {
+        $userid = (int)$_POST['userid'];
+        $fname = $_POST['fname'];
+        $mname = $_POST['mname'] ?? null; // Allow NULL
+        $lname = $_POST['lname'];
+        $email = $_POST['email'];
+        $contact_number = (int)$_POST['contact_number'];
+        $role_id = (int)$_POST['role_id'];
+        $active = (int)$_POST['active'];
 
-    if ($stmt->execute()) {
-        echo "<script>alert('User updated successfully.');</script>";
-        echo "<script>location.href = location.href;</script>"; // Refresh to show updated data
-    } else {
-        echo "<script>alert('Error updating user.');</script>";
+        $stmt = $connection->prepare("
+            UPDATE users_tb 
+            SET fname = ?, mname = ?, lname = ?, email = ?, contact_number = ?, role_id = ?, active = ? 
+            WHERE userid = ?
+        ");
+
+        $stmt->bind_param("ssssiiii", $fname, $mname, $lname, $email, $contact_number, $role_id, $active, $userid);
+
+        if ($stmt->execute()) {
+            echo "<script>alert('User updated successfully.');location.href='user-management.php';</script>";
+        } else {
+            echo "<script>alert('Error updating user.');</script>";
+        }
     }
 }
 
@@ -101,7 +118,12 @@ $result = $connection->query($sql);
                                     </td>
                                     <td class="text-center">
                                         <a href="#" class="text-primary me-2" title="Edit" data-bs-toggle="modal" data-bs-target="#editUserModal" onclick="editUser(<?= $row['userid'] ?>)"><i class="fas fa-edit fa-lg"></i></a>
-                                        <a href="#" class="text-danger" title="Archive"><i class="fas fa-archive fa-lg"></i></a>
+                                        <form method="post" action="" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                            <input type="hidden" name="userid" value="<?= $row['userid'] ?>">
+                                            <button type="submit" class="btn btn-sm btn-danger" name="archive_btn" title="Delete User">
+                                                <i class="fas fa-archive"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -238,7 +260,7 @@ $result = $connection->query($sql);
                 <!-- End of Edit User Modal -->
                 <script>
 function editUser(userid) {
-    fetch('get_user.php?userid=' + userid)
+    fetch('get_user.php?id=' + userid)
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
@@ -258,29 +280,6 @@ function editUser(userid) {
             alert('Error fetching user data: ' + error.message);
         });
 }
-
-fetch('get_user.php?id=' + userid)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Network response was not OK");
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        // Populate fields
-        document.getElementById('editUserId').value = data.userid;
-        document.getElementById('editFname').value = data.fname;
-        document.getElementById('editMname').value = data.mname;
-        document.getElementById('editLname').value = data.lname;
-        document.getElementById('editEmail').value = data.email;
-        document.getElementById('editContactNumber').value = data.contact_number;
-        document.getElementById('editRoleId').value = data.role_id;
-        document.getElementById('editActive').value = data.active;
-    })
-    .catch(error => console.error('Error fetching user data:', error));
 
 </script>
             

@@ -40,7 +40,7 @@ if (isset($_POST['submit'])) {
                       VALUES ('$first_name', '$last_name', '$email', '$contact_number', '$home_address', '$street_name', '$barangay', '$city_municipality', '$province', '$eta', '$request_id')";
 
         if ($connection->query($sql_guest) === TRUE) {
-            echo "<script>alert('Booking successful!'); window.location.href='../page1/index.php';</script>";
+            echo "<script>alert('Booking successful!'); </script>";
         } else {
             echo "Error inserting guest details: " . $connection->error;
         }

@@ -1,5 +1,6 @@
 <?php include('includes/header.php'); ?>
 <?php
+
 $searchTerm = isset($_GET['search']) ? $connection->real_escape_string($_GET['search']) : '';
 $searchQuery = $searchTerm ? "WHERE rt.room_name LIKE '%$searchTerm%'" : '';
 
@@ -21,60 +22,56 @@ $sql = "
 ";
 
 $result = $connection->query($sql);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  // Handle room deletion
+  if (isset($_POST['delete_room_btn']) && isset($_POST['room_id'])) {
+      $roomId = (int)$_POST['room_id'];
+      $deleteSql = "DELETE FROM rooms_tb WHERE room_id = $roomId";
+      if ($connection->query($deleteSql)) {
+          echo "<script>alert('Room deleted successfully.');window.location.href='rooms.php';</script>";
+      } else {
+          echo "<script>alert('Error deleting room.');</script>";
+      }
+  }
+
+  // Handle room update
+  elseif (isset($_POST['edit_room'])) {
+    $roomId = (int)$_POST['room_id'];
+    $statusId = (int)$_POST['room_status_id'];
+
+    $stmt = $connection->prepare("UPDATE rooms_tb SET room_status_id = ? WHERE room_id = ?");
+    $stmt->bind_param("ii", $statusId, $roomId);
+
+    if ($stmt->execute()) {
+        echo "<script>alert('Room status updated successfully.');location.href='rooms.php';</script>";
+    } else {
+        echo "<script>alert('Error updating room status.');</script>";
+    }
+  }
+}
+
+elseif (isset($_POST['add_room'])) {
+  $roomNumber = $_POST['room_number'];
+  $roomTypeId = (int)$_POST['room_type_id'];
+  $statusId = (int)$_POST['room_status_id'];
+  $descriptions = $_POST['descriptions'];
+
+  $stmt = $connection->prepare("
+      INSERT INTO rooms_tb (room_number, room_type_id, room_status_id, descriptions)
+      VALUES (?, ?, ?, ?)
+  ");
+
+  $stmt->bind_param("siis", $roomNumber, $roomTypeId, $statusId, $descriptions);
+
+  if ($stmt->execute()) {
+      echo "<script>alert('Room added successfully.');window.location.href='rooms.php';</script>";
+  } else {
+      echo "<script>alert('Error adding room.');</script>";
+  }
+}
+
 ?>
-<div class="modal fade" id="confirm_modal" role='dialog'>
-    <div class="modal-dialog modal-md modal-dialog-centered rounded-0" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-        <h5 class="modal-title">Confirmation</h5>
-      </div>
-      <div class="modal-body">
-        <div id="delete_content"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary btn-flat" id='confirm' onclick="">Continue</button>
-        <button type="button" class="btn btn-secondary btn-flat" data-dismiss="modal">Close</button>
-      </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal fade rounded-0" id="uni_modal" role='dialog'>
-    <div class="modal-dialog modal-md modal-dialog-centered rounded-0" role="document">
-      <div class="modal-content rounded-0">
-        <div class="modal-header rounded-0">
-        <h5 class="modal-title"></h5>
-      </div>
-      <div class="modal-body rounded-0">
-      </div>
-      <div class="modal-footer">
-        <button type="button" name= "save" class="btn btn-primary btn-flat" id='submit' onclick="$('#uni_modal form').submit()">Save</button>
-        <button type="button" class="btn btn-secondary btn-flat" data-dismiss="modal">Cancel</button>
-      </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal fade rounded-0" id="uni_modal_right" role='dialog'>
-    <div class="modal-dialog modal-full-height  modal-md rounded-0" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-        <h5 class="modal-title"></h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span class="fa fa-arrow-right"></span>
-        </button>
-      </div>
-      <div class="modal-body">
-      </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal fade rounded-0" id="viewer_modal" role='dialog'>
-    <div class="modal-dialog modal-md rounded-0" role="document">
-      <div class="modal-content">
-              <button type="button" class="btn-close" data-dismiss="modal"><span class="fa fa-times"></span></button>
-              <img src="" alt="">
-      </div>
-    </div>
-  </div>
 <div class="container mt-4">
     <div class="card card-outline card-primary">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -116,10 +113,101 @@ $result = $connection->query($sql);
                                     <td><?= $row['seasonal_price'] ?></td>
                                     <td><?= htmlspecialchars($row['descriptions']) ?></td>
                                     <td class="text-center">
-                                        <a data-id=<?= $row['room_id'] ?>" class="text-primary me-2 edit_data" title="Edit" href="javascript:void(0)"><i class="fas fa-edit fa-lg"></i></a>
-                                        <a data-id=<?= $row['room_id'] ?>" class="text-danger" title="Archive"><i class="fas fa-archive fa-lg"></i></a>
+                                    <a href="#" class="text-primary me-2" title="Edit" data-bs-toggle="modal" data-bs-target="#editUserModal" onclick="editRoom(<?= $row['room_id'] ?>)">
+                                        <i class="fas fa-edit fa-lg"></i>
+                                    </a>
+                                    <form method="post" action="" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this room?');">
+                                        <input type="hidden" name="room_id" value="<?= $row['room_id'] ?>">
+                                        <button type="submit" class="btn btn-sm btn-danger" name="room_btn" title="Archive">
+                                            <i class="fas fa-archive"></i>
+                                        </button>
+                                    </form>
                                     </td>
                                 </tr>
+                                <div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
+                                  <div class="modal-dialog modal-dialog-centered">
+                                      <div class="modal-content">
+                                          <form method="POST" action="">
+                                              <div class="modal-header">
+                                                  <h5 class="modal-title" id="addRoomModalLabel">Add New Room</h5>
+                                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                  <div class="mb-2">
+                                                      <label class="form-label">Room Number</label>
+                                                      <input type="text" class="form-control" name="room_number" required>
+                                                  </div>
+                                                  <div class="mb-2">
+                                                      <label class="form-label">Room Type</label>
+                                                      <input type="text" class="form-control" name="room_type" required>
+                                                  </div>
+                                                  <div class="mb-2">
+                                                      <label class="form-label">Base Price</label>
+                                                      <input type="number" class="form-control" name="base_price" required>
+                                                  </div>
+                                                  <div class="mb-2">
+                                                      <label class="form-label">Status</label>
+                                                      <select name="status" class="form-select" required>
+                                                          <option value="1" selected>Available</option>
+                                                          <option value="0">Not Available</option>
+                                                      </select>
+                                                  </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                  <button type="submit" name="add_room" class="btn btn-primary">Save Room</button>
+                                              </div>
+                                          </form>
+                                      </div>
+                                  </div>
+                              </div>
+                              <!-- End of Add Room Modal -->
+
+                              <!-- Edit Room Modal -->
+                              <div class="modal fade" id="editRoomModal" tabindex="-1">
+                                <div class="modal-dialog">
+                                  <form method="POST">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h5 class="modal-title">Edit Room Status</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                      </div>
+
+                                      <div class="modal-body">
+                                        <input type="hidden" name="room_id" id="editRoomId">
+
+                                        <div class="mb-3">
+                                          <label class="form-label">Room Number</label>
+                                          <input type="text" class="form-control" id="editRoomNumber" disabled>
+                                        </div>
+
+                                        <div class="mb-3">
+                                          <label class="form-label">Room Type</label>
+                                          <input type="text" class="form-control" id="editRoomType" disabled>
+                                        </div>
+
+                                        <div class="mb-3">
+                                          <label class="form-label">Description</label>
+                                          <textarea class="form-control" id="editDescriptions" rows="3" disabled></textarea>
+                                        </div>
+
+                                        <div class="mb-3">
+                                          <label class="form-label">Room Status</label>
+                                          <select class="form-select" name="room_status_id" id="editRoomStatusId" required>
+                                            <!-- Populate with PHP or JS -->
+                                          </select>
+                                        </div>
+                                      </div>
+
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" name="edit_room" class="btn btn-primary">Save Changes</button>
+                                      </div>
+                                    </div>
+                                  </form>
+                                </div>
+                              </div>
+<!-- End of Edit Room Modal -->
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr>
@@ -160,49 +248,26 @@ $result = $connection->query($sql);
         margin-top: 10px;
 }
 </style>
-
 <script>
-	$(document).ready(function(){
-        $('#create_new').click(function(){
-			uni_modal("Add New room","rooms/manage_room.php",'large')
-		})
-        $('.edit_data').click(function(){
-			uni_modal("Update Room Details","manage_room.php?room_id="+$(this).attr('data-id'),'large')
-		})
-		$('.delete_data').click(function(){
-			_conf("Are you sure to delete this Room permanently?","delete_room",[$(this).attr('room_id')])
-		})
-		$('.view_data').click(function(){
-			uni_modal("Room Details","rooms/view_room.php?id="+$(this).attr('room_id'))
-		})
-		$('.table td, .table th').addClass('py-1 px-2 align-middle')
-		$('.table').dataTable({
-            columnDefs: [
-                { orderable: false, targets: 5 }
-            ],
+function editRoom(roomId) {
+    fetch('get-room.php?id=' + roomId)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('editRoomId').value = data.room_id;
+            document.getElementById('editRoomNumber').value = data.room_number;
+            document.getElementById('editRoomType').value = data.room_type_name; // This must be returned by PHP
+            document.getElementById('editDescriptions').value = data.descriptions;
+            document.getElementById('editRoomStatusId').value = data.room_status_id;
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('editRoomModal'));
+            modal.show();
+        })
+        .catch(error => {
+            alert('Failed to fetch room data: ' + error.message);
         });
-	})
-	function delete_room($id){
-		start_loader();
-		$.ajax({
-			url:_base_url_+"Master.php?f=delete_room",
-			method:"POST",
-			data:{id: $id},
-			dataType:"json",
-			error:err=>{
-				console.log(err)
-				alert_toast("An error occured.",'error');
-				end_loader();
-			},
-			success:function(resp){
-				if(typeof resp== 'object' && resp.status == 'success'){
-					location.reload();
-				}else{
-					alert_toast("An error occured.",'error');
-					end_loader();
-				}
-			}
-		})
-	}
+}
 </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <?php include('includes/footer.php'); ?>
