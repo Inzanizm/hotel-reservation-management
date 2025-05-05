@@ -1,73 +1,92 @@
-<?php include('initialize.php');?>
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-require 'vendor/autoload.php'; // Or Composer's autoload if used
-if (isset($_POST['login'])) {
-$email = $_POST['email'];
-$password=$_POST['password'];
+// Include the initialization file which already starts the session
+include('initialize.php');
 
-$stmt = $connection->prepare("SELECT * FROM users_tb WHERE email = ?");
+// Ensure the session is started if not already done
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+use PHPMailer\PHPMailer\PHPMailer;
+require 'vendor/autoload.php';
+
+if (isset($_POST['login'])) {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    // Prepare and execute the query to check if the user exists
+    $stmt = $connection->prepare("SELECT * FROM users_tb WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $res = $stmt->get_result();
 
-    
     if ($res->num_rows === 1) {
         $user = $res->fetch_assoc();
 
-        if ($password == $user['password']) {
+        // Use password_verify for security (ensure passwords are hashed in DB)
+        if (password_verify($password, $user['password'])) {
+            // Set session variables
+            $_SESSION['userid'] = $user['userid']; // Save user id in session
             $_SESSION['email'] = $email;
-        $_SESSION['alert_message']='You are logged in.';
-        $_SESSION['user_firstname']=$row['firstname'];
-        $_SESSION['is_login']=true;
-        $otp = rand(100000, 999999);
-        
-$_SESSION['otp'] = $otp;
-$_SESSION['email'] = $email;
+            $_SESSION['alert_message'] = 'You are logged in.';
+            $_SESSION['user_firstname'] = $user['fname'];
+            $_SESSION['is_login'] = true;
+            
+            // Generate OTP
+            $otp = rand(100000, 999999);
+            $_SESSION['otp'] = $otp;
 
-// Send via Mailtrap or Gmail
-$mail = new PHPMailer;
-$mail->isSMTP();
-$mail->Host = 'sandbox.smtp.mailtrap.io'; // Or smtp.gmail.com
-$mail->SMTPAuth = true;
-$mail->Username = '9da3dac8b7d8aa';
-$mail->Password = 'c49097f0da5dca';
-$mail->SMTPSecure = 'tls';
-$mail->Port = 587;
+            // Log the login activity
+            $operation_name = 'Login';
+            $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
+            $operation_type_stmt->bind_param("s", $operation_name);
+            $operation_type_stmt->execute();
+            $operation_type_res = $operation_type_stmt->get_result();
 
-$mail->setFrom('no-reply@resort.com', 'Resort');
-$mail->addAddress($email);
-$mail->Subject = 'Your One-Time Password';
-$mail->Body    = "Your OTP is: $otp";
+            if ($operation_type_res->num_rows > 0) {
+                $operation_type = $operation_type_res->fetch_assoc();
 
-if (!$mail->send()) {
-  echo 'Mailer Error: ' . $mail->ErrorInfo;
-} else {
-    $_SESSION['email'] = $email;
-  $_SESSION['otp'] = $otp;
+                // Log the login activity
+                $log_stmt = $connection->prepare("INSERT INTO audit_log_tb (user_id, operation_type_id, timestamp) VALUES (?, ?, NOW())");
+                $log_stmt->bind_param("ii", $user['userid'], $operation_type['operation_type_id']);
+                $log_stmt->execute();
+            }
 
-  // ✅ Redirect to otp page
-  header("Location: otp.php");
-  exit();
-}
-    } else{
-        $_SESSION['error'] = "Incorrect password.";
+            // Send OTP via email
+            $mail = new PHPMailer;
+            $mail->isSMTP();
+            $mail->Host = 'sandbox.smtp.mailtrap.io';
+            $mail->SMTPAuth = true;
+            $mail->Username = '9da3dac8b7d8aa';
+            $mail->Password = 'c49097f0da5dca';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
+
+            $mail->setFrom('no-reply@resort.com', 'Resort');
+            $mail->addAddress($email);
+            $mail->Subject = 'Your One-Time Password';
+            $mail->Body = "Your OTP is: $otp";
+
+            if (!$mail->send()) {
+                echo 'Mailer Error: ' . $mail->ErrorInfo;
+            } else {
+                header("Location: otp.php");
+                exit();
+            }
+        } else {
+            $_SESSION['error'] = "Incorrect password.";
             header("Location: index.php");
             exit();
-    }
-
-} else {
-    $_SESSION['error'] = "Email not found.";
+        }
+    } else {
+        $_SESSION['error'] = "Email not found.";
         header("Location: index.php");
         exit();
-}
-    
-
-
-        
-    
+    }
 }
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
