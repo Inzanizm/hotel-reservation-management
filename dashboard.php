@@ -121,8 +121,10 @@ $total_guests_today = $row['total'] ?? 0;
 <?php // REVENUE CARD
 // Today's Date
 $today = date('Y-m-d');
-$monthStart = date('Y-m-01');
-$weekStart = date('Y-m-d', strtotime("last sunday"));
+$monthStart = date('Y-m-01');  // First day of the current month
+$monthEnd = date('Y-m-31');    // Last day of the current month (May 31st)
+$weekStart = max(date('Y-m-d', strtotime("last sunday")), $monthStart);  // Start of the current week
+
 
 // Total Revenue Today
 $revenueToday = 0;
@@ -154,12 +156,14 @@ $sql = "
     SELECT SUM(p.amount_paid) AS total 
     FROM payments_tb p
     JOIN payment_status_tb ps ON p.payment_status_id = ps.payment_status_id
-    WHERE p.date_paid >= '$monthStart' AND p.date_paid <= '$today' AND ps.payment_status_id = 1";
+    WHERE p.date_paid >= '$monthStart' AND p.date_paid <= '$monthEnd' AND ps.payment_status_id = 1";
 $result = $connection->query($sql);
 if ($row = $result->fetch_assoc()) {
     $revenueMonth = $row['total'] ?? 0;
 }
 ?>
+
+
 <style>
         .dashboard {
             display: flex;
