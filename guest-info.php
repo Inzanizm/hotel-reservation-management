@@ -4,13 +4,56 @@
 // Handle Delete (Archive) Action
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_btn'])) {
     $archiveId = intval($_POST['archive_id']);
-    $deleteSql = "DELETE FROM guests_tb WHERE guests_id = $archiveId";
-    if ($connection->query($deleteSql)) {
-        echo "<script>alert('Guest deleted successfully.'); window.location.href='guest-info.php';</script>";
+
+    // Check if the guest exists (optional but good practice)
+    $check_stmt = $connection->prepare("SELECT guests_id FROM guests_tb WHERE guests_id = ?");
+    $check_stmt->bind_param("i", $archiveId);
+    $check_stmt->execute();
+    $check_stmt->store_result();
+
+    if ($check_stmt->num_rows > 0) {
+        // Proceed with deletion
+        $deleteSql = "DELETE FROM guests_tb WHERE guests_id = ?";
+        $delete_stmt = $connection->prepare($deleteSql);
+        $delete_stmt->bind_param("i", $archiveId);
+
+        if ($delete_stmt->execute()) {
+            // Get operation type ID for 'Delete Guest'
+            $operation_name = 'Delete Guest Information';
+            $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
+            $operation_type_stmt->bind_param("s", $operation_name);
+            $operation_type_stmt->execute();
+            $operation_type_res = $operation_type_stmt->get_result();
+
+            if ($operation_type_res->num_rows > 0) {
+                $operation_type = $operation_type_res->fetch_assoc();
+
+                // Insert into audit log
+                $user_id = $_SESSION['userid'] ?? null;
+                if ($user_id) {
+                    $log_stmt = $connection->prepare("INSERT INTO audit_log_tb (user_id, operation_type_id, timestamp) VALUES (?, ?, NOW())");
+                    $log_stmt->bind_param("ii", $user_id, $operation_type['operation_type_id']);
+                    $log_stmt->execute();
+                    $log_stmt->close();
+                }
+            }
+
+            $operation_type_stmt->close();
+
+            // Redirect with success message
+            echo "<script>alert('Guest deleted successfully.'); window.location.href='guest-info.php';</script>";
+        } else {
+            echo "<script>alert('Error deleting guest.');</script>";
+        }
+
+        $delete_stmt->close();
     } else {
-        echo "<script>alert('Error deleting guest.');</script>";
+        echo "<script>alert('Guest not found.'); window.location.href='guest-info.php';</script>";
     }
+
+    $check_stmt->close();
 }
+
 // Corrected SQL to fetch guest information
 $sql = "
     SELECT 

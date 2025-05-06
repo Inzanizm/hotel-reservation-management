@@ -1,20 +1,27 @@
-<?php include('includes/header.php'); ?>
-
 <?php
+include('includes/header.php');
+
 // Include PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 require 'vendor/autoload.php';
 
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+$user_id = $_SESSION['userid'] ?? null;
+
+if (!$user_id) {
+    echo "<script>alert('User session not found. Please log in again.');</script>";
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Get data from the form
     $inquiry_id = $_POST['inquiry_id'];
     $response_message = $_POST['response_message'];
-    
-    // Assuming a logged-in user, get the responder_id (you should replace this with actual logged-in user logic)
-    $responder_id = 2;  // Replace with the actual user ID from your session or authentication system
 
-    // Get the guest's email from the database
+    // Get the guest's email and other info from the database
     $sql = "SELECT sender_email, sender_name, message_body, inquiry_type FROM inquiries_tb WHERE inquiry_id = ?";
     if ($stmt = $connection->prepare($sql)) {
         $stmt->bind_param("i", $inquiry_id);
@@ -24,15 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->close();
     }
 
-    // Insert the response into the inquiry_replies_tb table
-    $sql = "INSERT INTO inquiry_replies_tb (inquiry_id, responder_id, reply_message, replied_date) 
-            VALUES (?, ?, ?, NOW())";
-    
+    // Insert the response into the replies table
+    $sql = "INSERT INTO inquiry_replies_tb (inquiry_id, responder_id, reply_message, replied_date) VALUES (?, ?, ?, NOW())";
     if ($stmt = $connection->prepare($sql)) {
-        $stmt->bind_param("iis", $inquiry_id, $responder_id, $response_message);
+        $stmt->bind_param("iis", $inquiry_id, $user_id, $response_message);
 
         if ($stmt->execute()) {
-            // Optionally: Update the inquiry status to 'responded'
+            // Update the inquiry status
             $update_status = "UPDATE inquiries_tb SET status_id = 2 WHERE inquiry_id = ?";
             if ($update_stmt = $connection->prepare($update_status)) {
                 $update_stmt->bind_param("i", $inquiry_id);
@@ -40,66 +45,74 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $update_stmt->close();
             }
 
-            // Send email to the guest using PHPMailer
+            // === Audit Log: Log this response action ===
+            $operation_name = 'Respond to Inquiry';
+            $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
+            $operation_type_stmt->bind_param("s", $operation_name);
+            $operation_type_stmt->execute();
+            $operation_type_res = $operation_type_stmt->get_result();
+
+            if ($operation_type_res->num_rows > 0) {
+                $operation_type = $operation_type_res->fetch_assoc();
+
+                $log_stmt = $connection->prepare("INSERT INTO audit_log_tb (user_id, operation_type_id, timestamp) VALUES (?, ?, NOW())");
+                $log_stmt->bind_param("ii", $user_id, $operation_type['operation_type_id']);
+                $log_stmt->execute();
+                $log_stmt->close();
+            }
+
+            $operation_type_stmt->close();
+            // === End of Audit Logging ===
+
+            // Send email response to the guest
             $email_subject = "Response to Your Inquiry";
             $email_body = "
-                Hello $sender_name,
+Hello $sender_name,
 
-                Thank you for reaching out to us. We have received your inquiry and here is the response:
+Thank you for reaching out to us. We have received your inquiry and here is the response:
 
-                ---
+-----------
+Inquiry Type: $inquiry_type
+Your Message: $message_body
 
-                Inquiry Type: $inquiry_type
-                Your Message: $message_body
+Response Message:
+$response_message
 
-                Response Message:
-                $response_message
-
-                Best regards,
-                Support Team
+Best regards,
+Support Team
             ";
 
-            // Send email with PHPMailer
             $mail = new PHPMailer(true);
             try {
-                //Server settings
                 $mail->isSMTP();
-                $mail->Host = 'sandbox.smtp.mailtrap.io';  // Set the SMTP server to use
+                $mail->Host = 'sandbox.smtp.mailtrap.io';
                 $mail->SMTPAuth = true;
-                $mail->Username = '9da3dac8b7d8aa';  // SMTP username
-                $mail->Password = 'c49097f0da5dca';  // SMTP password
+                $mail->Username = '9da3dac8b7d8aa';
+                $mail->Password = 'c49097f0da5dca';
                 $mail->SMTPSecure = 'tls';
-                $mail->Port = 587;  // TCP port for TLS
+                $mail->Port = 587;
 
-                //Recipients
                 $mail->setFrom('your_email@example.com', 'Support Team');
-                $mail->addAddress($sender_email, $sender_name);  // Add guest's email and name
-                $mail->addReplyTo('support@example.com', 'Support Team');  // Optional: Add reply-to address
+                $mail->addAddress($sender_email, $sender_name);
+                $mail->addReplyTo('support@example.com', 'Support Team');
 
-                // Content
                 $mail->isHTML(true);
                 $mail->Subject = $email_subject;
                 $mail->Body    = nl2br($email_body);
 
-                // Send the email
                 $mail->send();
-
-                echo 'Response sent to guest successfully!';
+                echo "<script>alert('Response sent to guest successfully!'); window.location.href = 'inquiries_list.php';</script>";
+                exit();
             } catch (Exception $e) {
-                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+                echo "<script>alert('Message could not be sent. Mailer Error: {$mail->ErrorInfo}');</script>";
             }
-
-            // Redirect back to the inquiries page or show a success message
-            header("Location: inquiries_list.php");
-            exit();
         } else {
-            // Handle errors if insert fails
-            echo "Error: " . $stmt->error;
+            echo "<script>alert('Error saving reply: " . $stmt->error . "');</script>";
         }
 
         $stmt->close();
     } else {
-        echo "Error: " . $connection->error;
+        echo "<script>alert('Database error: " . $connection->error . "');</script>";
     }
 }
 ?>

@@ -1,19 +1,48 @@
-<?php include('includes/header.php'); ?>
+<?php include('includes/header.php'); 
+
+// Ensure the session is started if not already done
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <?php
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Handle delete
+    // Handle delete action
     if (isset($_POST['archive_btn']) && isset($_POST['userid'])) {
         $userId = (int)$_POST['userid'];
+
+        // Delete query
         $deleteSql = "DELETE FROM users_tb WHERE userid = $userId";
         if ($connection->query($deleteSql)) {
+            // Log the deletion action
+            $operation_name = 'Delete User';
+            $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
+            $operation_type_stmt->bind_param("s", $operation_name);
+            $operation_type_stmt->execute();
+            $operation_type_res = $operation_type_stmt->get_result();
+
+            if ($operation_type_res->num_rows > 0) {
+                $operation_type = $operation_type_res->fetch_assoc();
+
+                // Log the operation in the audit log table
+                $user_id = $_SESSION['userid'] ?? null;  // Make sure user is logged in
+                if ($user_id) {
+                    $log_stmt = $connection->prepare("INSERT INTO audit_log_tb (user_id, operation_type_id, timestamp) VALUES (?, ?, NOW())");
+                    $log_stmt->bind_param("ii", $user_id, $operation_type['operation_type_id']);
+                    $log_stmt->execute();
+                    $log_stmt->close();
+                }
+            }
+
+            $operation_type_stmt->close();
             echo "<script>alert('User deleted successfully.');window.location.href='user-management.php';</script>";
         } else {
             echo "<script>alert('Error deleting user.');</script>";
         }
     }
 
-    // Handle update
+    // Handle update action
     elseif (isset($_POST['edit_user'])) {
         $userid = (int)$_POST['userid'];
         $fname = $_POST['fname'];
@@ -24,20 +53,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $role_id = (int)$_POST['role_id'];
         $active = (int)$_POST['active'];
 
+        // Update query
         $stmt = $connection->prepare("
             UPDATE users_tb 
             SET fname = ?, mname = ?, lname = ?, email = ?, contact_number = ?, role_id = ?, active = ? 
             WHERE userid = ?
         ");
-
         $stmt->bind_param("ssssiiii", $fname, $mname, $lname, $email, $contact_number, $role_id, $active, $userid);
 
         if ($stmt->execute()) {
+            // Log the update action
+            $operation_name = 'Update User Details';
+            $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
+            $operation_type_stmt->bind_param("s", $operation_name);
+            $operation_type_stmt->execute();
+            $operation_type_res = $operation_type_stmt->get_result();
+
+            if ($operation_type_res->num_rows > 0) {
+                $operation_type = $operation_type_res->fetch_assoc();
+
+                // Log the operation in the audit log table
+                $user_id = $_SESSION['userid'] ?? null;  // Ensure user is logged in
+                if ($user_id) {
+                    $log_stmt = $connection->prepare("INSERT INTO audit_log_tb (user_id, operation_type_id, timestamp) VALUES (?, ?, NOW())");
+                    $log_stmt->bind_param("ii", $user_id, $operation_type['operation_type_id']);
+                    $log_stmt->execute();
+                    $log_stmt->close();
+                }
+            }
+
+            $operation_type_stmt->close();
             echo "<script>alert('User updated successfully.');location.href='user-management.php';</script>";
         } else {
             echo "<script>alert('Error updating user.');</script>";
         }
+        $stmt->close();
     }
+}
+
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
 }
 
 if (isset($_POST['add_user'])) {
@@ -51,7 +106,13 @@ if (isset($_POST['add_user'])) {
     $password_raw = $_POST['password'];
     $password_hashed = password_hash($password_raw, PASSWORD_DEFAULT);
 
-    // Check if email already exists
+    $user_id = $_SESSION['userid'] ?? null;
+
+    if (!$user_id) {
+        echo "<script>alert('User session not found. Please log in again.');</script>";
+        exit();
+    }
+
     $check_stmt = $connection->prepare("SELECT userid FROM users_tb WHERE email = ?");
     $check_stmt->bind_param("s", $email);
     $check_stmt->execute();
@@ -60,19 +121,37 @@ if (isset($_POST['add_user'])) {
     if ($check_stmt->num_rows > 0) {
         echo "<script>alert('Email already exists. Please use another.');</script>";
     } else {
-        // Proceed with insert
         $stmt = $connection->prepare("INSERT INTO users_tb (fname, mname, lname, email, contact_number, role_id, active, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("sssssiis", $fname, $mname, $lname, $email, $contact_number, $role_id, $active, $password_hashed);
 
         if ($stmt->execute()) {
-            echo "<script>location.href = location.href;</script>"; // Refresh to show new user
+            $operation_name = 'Add User';
+            $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
+            $operation_type_stmt->bind_param("s", $operation_name);
+            $operation_type_stmt->execute();
+            $operation_type_res = $operation_type_stmt->get_result();
+
+            if ($operation_type_res->num_rows > 0) {
+                $operation_type = $operation_type_res->fetch_assoc();
+
+                $log_stmt = $connection->prepare("INSERT INTO audit_log_tb (user_id, operation_type_id, timestamp) VALUES (?, ?, NOW())");
+                $log_stmt->bind_param("ii", $user_id, $operation_type['operation_type_id']);
+                $log_stmt->execute();
+                $log_stmt->close();
+            }
+
+            $operation_type_stmt->close(); // ✅ Safe to call here
+            echo "<script>location.href = location.href;</script>";
         } else {
-            echo "<script>alert('Error adding user.');</script>";
+            echo "<script>alert('Error adding user: " . $stmt->error . "');</script>";
         }
+
+        $stmt->close();
     }
 
     $check_stmt->close();
 }
+
 
 // JOIN users -> user_roles
 $sql = "SELECT u.userid, u.fname, u.lname, u.email, u.contact_number, CONCAT(u.fname, ' ', u.lname) AS fullname, u.active, ur.role_name FROM users_tb u LEFT JOIN user_roles ur ON u.role_id = ur.role_id";

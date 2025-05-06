@@ -14,7 +14,7 @@ $sql = "
     JOIN 
         reservation_status_tb r ON b.reservation_status_id = r.reservation_status_id
     WHERE 
-        r.status_name = 'Completed'
+        r.reservation_status_id = 1
     GROUP BY 
         DAYOFWEEK(booking_date)
 ";
@@ -35,7 +35,11 @@ $monthly_num = array_fill(0, 12, 0); // Init array for Jan to Dec
 $sql = "SELECT
             MONTH(booking_date) AS month_num,
             COUNT(*) AS total
-        FROM reservations_tb
+        FROM reservations_tb b
+        JOIN 
+        reservation_status_tb r ON b.reservation_status_id = r.reservation_status_id
+        WHERE 
+        r.reservation_status_id = 1
         GROUP BY month_num
         ORDER BY month_num";
 
@@ -72,21 +76,21 @@ $confirmed_count = ($result_confirmed && $result_confirmed->num_rows > 0) ? $res
 // Count of Cancelled Reservations
 $sql_cancelled = "SELECT COUNT(*) as total FROM reservations_tb r
                   JOIN reservation_status_tb rs ON r.reservation_status_id = rs.reservation_status_id
-                  WHERE rs.status_name = 'Cancelled'";
+                  WHERE rs.reservation_status_id = 4";
 $result_cancelled = $connection->query($sql_cancelled);
 $cancelled_count = ($result_cancelled && $result_cancelled->num_rows > 0) ? $result_cancelled->fetch_assoc()['total'] : 0;
 
 // Count of Occupied Rooms
 $sql_occupied = "SELECT COUNT(*) as total FROM rooms_tb r
                   JOIN room_status_tb rs ON r.room_status_id = rs.room_status_id
-                  WHERE rs.status_name = 'Occupied'";
+                  WHERE rs.room_status_id = 4";
 $result_occupied = $connection->query($sql_occupied);
 $occupied_count = ($result_occupied && $result_occupied->num_rows > 0) ? $result_occupied->fetch_assoc()['total'] : 0;
 
 // Count of Pending Refunds
 $sql_pendingrefunds = "SELECT COUNT(*) as total FROM refund_tb r
                   JOIN refund_status_tb rs ON r.refund_status_id = rs.refund_status_id
-                  WHERE rs.status_name = 'Pending'";
+                  WHERE rs.refund_status_id = 1";
 $result_pendingrefunds = $connection->query($sql_pendingrefunds);
 $pendingrefunds_count = ($result_pendingrefunds && $result_pendingrefunds->num_rows > 0) ? $result_pendingrefunds->fetch_assoc()['total'] : 0;
 
@@ -106,7 +110,7 @@ $sql_guests_today = "SELECT SUM(r.total_guests) AS total
 FROM reservations_tb r
 JOIN reservation_status_tb rs ON r.reservation_status_id = rs.reservation_status_id
 WHERE CURDATE() BETWEEN r.check_in_date AND r.check_out_date
-  AND rs.status_name IN ('Confirmed', 'Completed')";
+  AND rs.reservation_status_id IN (1, 3)";
 $result = $connection->query($sql_guests_today);
 $row = $result->fetch_assoc();
 $total_guests_today = $row['total'] ?? 0;
@@ -126,7 +130,7 @@ $sql = "
     SELECT SUM(p.amount_paid) AS total 
     FROM payments_tb p
     JOIN payment_status_tb ps ON p.payment_status_id = ps.payment_status_id
-    WHERE DATE(p.date_paid) = '$today' AND ps.status_name = 'paid'";
+    WHERE DATE(p.date_paid) = '$today' AND ps.payment_status_id = 1";
 $result = $connection->query($sql);
 if ($row = $result->fetch_assoc()) {
     $revenueToday = $row['total'] ?? 0;
@@ -138,7 +142,7 @@ $sql = "
     SELECT SUM(p.amount_paid) AS total 
     FROM payments_tb p
     JOIN payment_status_tb ps ON p.payment_status_id = ps.payment_status_id
-    WHERE p.date_paid >= '$weekStart' AND p.date_paid <= '$today' AND ps.status_name = 'paid'";
+    WHERE p.date_paid >= '$weekStart' AND p.date_paid <= '$today' AND ps.payment_status_id = 1";
 $result = $connection->query($sql);
 if ($row = $result->fetch_assoc()) {
     $revenueWeek = $row['total'] ?? 0;
@@ -150,7 +154,7 @@ $sql = "
     SELECT SUM(p.amount_paid) AS total 
     FROM payments_tb p
     JOIN payment_status_tb ps ON p.payment_status_id = ps.payment_status_id
-    WHERE p.date_paid >= '$monthStart' AND p.date_paid <= '$today' AND ps.status_name = 'paid'";
+    WHERE p.date_paid >= '$monthStart' AND p.date_paid <= '$today' AND ps.payment_status_id = 1";
 $result = $connection->query($sql);
 if ($row = $result->fetch_assoc()) {
     $revenueMonth = $row['total'] ?? 0;
