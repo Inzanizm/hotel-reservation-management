@@ -46,7 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
             // === Audit Log: Log this response action ===
+<<<<<<< HEAD
             $operation_name = 'Respond to Inquiry';
+=======
+            $operation_name = 'Answer Email Inquiry';
+>>>>>>> 1822f4082b682e1570b338700bd39c929d099571
             $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
             $operation_type_stmt->bind_param("s", $operation_name);
             $operation_type_stmt->execute();

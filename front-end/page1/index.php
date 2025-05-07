@@ -1,215 +1,111 @@
-<?php include('../../initialize.php'); ?>
+<?php
+// Assuming settings are stored in a JSON file (settings.txt)
+$settings = json_decode(file_get_contents('settings.txt'), true);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+<head>  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
   <style>
     .gb {
-  color: #ffffff;
-}
+      color: #ffffff;
+    }
   </style>
   <title>Resort Design</title>
 </head>
 
 <body>
- 
-
   <div class="main">
-    <!--Nav-->
+    <!-- Nav -->
     <header>
       <div class="container">
         <div class="nav">
           <div class="resort-img">
-            <img src="WEBSITE IMG/Logo.png" alt="Resort Logo" class="circle-img" />
+            <img src="<?php echo $settings['logo_image']; ?>" alt="Resort Logo" class="circle-img" />
           </div>
           <div class="icon">
             <div class="bg-primary">Resort</div>
           </div>
           <div class="menu">
             <ul>
-              <li><a href="#"  onclick="">Home</a></li>
+              <li><a href="#" onclick="">Home</a></li>
               <li><a href="#About">About</a></li>
               <li><a href="#Experience">Experiences</a></li>
               <li><a href="#Packages">Packages</a></li>
               <li><a href="#Contact">Contact</a></li>
               <li>
-                <button type="button" class="book-now-button" onclick="window.location.href='../page2/index.php'">
+                <button type="button" class="book-now-button" onclick="window.location.href='<?php echo $settings['book_now_link']; ?>'">
                   Book Now!
                 </button>
               </li>
-              </ul>
-              </div>
-              
-              
-              </div>
-              
-              </header>
-              <div class="hero-heading">
-                <h1>HEADING</h1>
-                <button  type="button" class="view-packages-button" onclick=""><a href="#Packages"> View Packages</a>
-                 
-                </button>
-                <button type="button" class="Book-Now-button" onclick="window.location.href='../page2/index.php'">
-                  Book Now
-                </button>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <div class="hero-heading">
+      <h1><?php echo $settings['hero_heading']; ?></h1>
+      <button type="button" class="view-packages-button" onclick="window.location.href='<?php echo $settings['view_packages_link']; ?>'">View Packages</button>
+      <button type="button" class="Book-Now-button" onclick="window.location.href='<?php echo $settings['book_now_link']; ?>'">Book Now</button>
+    </div>
 
-                
-              </div>
-              
-              
-           <!-- Chat Button -->
-<div class="chathead" onclick="toggleChat()" >
-💬
-</div>
+    <!-- Chat Button -->
+    <div class="chathead" onclick="toggleChat()">💬</div>
 
-<!-- Chat Box -->
-<div id="chat-box" class="chatbox">
-  <div class="chatheader"><h1>Resort Name</h1></div>
-  <div class="chatbody"><h1>Hi there<br> How can we help you?</h1> </div>
-  <div class="messageus"><p>Send us message</p><h6>We typically reply in a few hours</h6> <button class="sendbtn"><img src="WEBSITE IMG/sendus.png" alt="sendus Logo" class="sendus-img" onclick="toggleMessageChat()" /></button></div>
-  <div class="search">
-    <div class="searchtyp"> <input type="searchtext" placeholder="Send for help" /><button class="searchbtn"><img src="WEBSITE IMG/maglass.png" alt="maglass Logo" class="maglass-img" onclick="toggleSupportChat() "/></button></div>
-    <button class="scontent" onclick=""><p>How do i refund?     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;></p></button>
-  </div>
-  
-  <div class="footertab">
-    <button class="footer-btn" onclick="toggleChat()">
-      <img src="WEBSITE IMG/homie.png" alt="Home" class="footer-img" />
-      <p>Home</p>
-    </button>
-  
-    <button class="footer-btn" onclick="toggleMessageChat()">
-      <img src="WEBSITE IMG/messageme.png" alt="Message" class="footer-img" />
-      <p>Message</p>
-    </button>
-  
-    <button class="footer-btn" onclick="toggleSupportChat()">
-      <img src="WEBSITE IMG/huh.png" alt="Questions" class="footer-img" />
-      <p>Questions</p>
-    </button>
-  </div>
-</div>
-            
-              
- </div>
+    <!-- Chat Box -->
+    <div id="chat-box" class="chatbox">
+      <div class="chatheader"><h1>Resort Name</h1></div>
+      <div class="chatbody"><h1>Hi there<br> How can we help you?</h1> </div>
+      <div class="messageus">
+        <p>Send us message</p>
+        <h6>We typically reply in a few hours</h6> 
+        <button class="sendbtn"><img src="WEBSITE IMG/sendus.png" alt="sendus Logo" class="sendus-img" onclick="toggleMessageChat()" /></button>
+      </div>
+      <div class="search">
+        <div class="searchtyp"> 
+          <input type="searchtext" placeholder="Send for help" />
+          <button class="searchbtn"><img src="WEBSITE IMG/maglass.png" alt="maglass Logo" class="maglass-img" onclick="toggleSupportChat()" /></button>
+        </div>
+        <button class="scontent" onclick=""><p>How do I refund?</p></button>
+      </div>
+      
+      <div class="footertab">
+        <button class="footer-btn" onclick="toggleChat()">
+          <img src="WEBSITE IMG/homie.png" alt="Home" class="footer-img" />
+          <p>Home</p>
+        </button>
+    
+        <button class="footer-btn" onclick="toggleMessageChat()">
+          <img src="WEBSITE IMG/messageme.png" alt="Message" class="footer-img" />
+          <p>Message</p>
+        </button>
+    
+        <button class="footer-btn" onclick="toggleSupportChat()">
+          <img src="WEBSITE IMG/huh.png" alt="Questions" class="footer-img" />
+          <p>Questions</p>
+        </button>
+      </div>
+    </div>
   </div>
 
-<!-- Chat Box Message -->
-<div id="chat-boxM" class="chatboxmss">
-  <div class="chatheaderm"><h1>Resort Name</h1></div>
-   <button class="buton" onclick="toggleSendm()">Click this to type concern</button>
-   <p class="hi">Hi</p>
-   <p class="help">How can we help you</p>
-  
-  <div class="footertabmss">
-    <button class="footer-btn" onclick="toggleHomeChat()">
-      <img src="WEBSITE IMG/homie.png" alt="Home" class="footer-img" />
-      <p>Home</p>
-    </button>
-  
-    <button class="footer-btn" onclick="toggleMessageChat()">
-      <img src="WEBSITE IMG/messageme.png" alt="Message" class="footer-img" />
-      <p>Message</p>
-    </button>
-  
-    <button class="footer-btn"  onclick="toggleSupportChat()">
-      <img src="WEBSITE IMG/huh.png" alt="Questions" class="footer-img" />
-      <p>Questions</p>
-    </button>
-  </div>
-  <div class="sendm" style="display: none;">
-    <button class="down" onclick="toggleSendm()">v</button>
-    <input type="text" id="message" placeholder="Email@example.com">
-    <input type="text" id="message" placeholder="Type your message here.....">
-    <button onclick="sendEmail()">Send</button>
-  </div>
-</div>
-            
-              
- </div>
-  </div>
-<!--Chat Support-->
-<div id="chat-boxS" class="chatbox">
-  <div class="chatheaders"><h1>Help</h1></div>
-  
-  <div class="searchs">
-    <div class="searchtyps"> <input type="searchtexts" placeholder="Send for help" /><button class="searchbtns"><img src="WEBSITE IMG/maglass.png" alt="maglass Logo" class="maglass-img" onclick="toggleSupportChat()"/></button></div>
-    <button class="scontents" onclick=""><p>How do i refund?     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;></p></button>
-  </div>
-  
-  <div class="footertab">
-    <button class="footer-btn" onclick="toggleChat()">
-      <img src="WEBSITE IMG/homie.png" alt="Home" class="footer-img" />
-      <p>Home</p>
-    </button>
-  
-    <button class="footer-btn" onclick="toggleMessageChat()">
-      <img src="WEBSITE IMG/messageme.png" alt="Message" class="footer-img" />
-      <p>Message</p>
-    </button>
-  
-    <button class="footer-btn" onclick="toggleSupportChat()">
-      <img src="WEBSITE IMG/huh.png" alt="Questions" class="footer-img" />
-      <p>Questions</p>
-    </button>
-  </div>
-</div>
-            
-              
- </div>
-  </div>
-
-
-
-<!--About-->
+  <!-- About -->
   <section id="About" class="second-section">
     <div class="container">
       <div class="section-content">
         <h2>RESORT NAME</h2>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        </p>
-        <h4>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut Lorem ipsum
-          dolor sit amet, consectetur adipislabore et dolore magna aliqua. Ut enim ad minim veniam, quis nostru
-
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-          magna aliqua. Ut enim ad minim veniam, quis nostrud </h4>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+        <h4>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut Lorem ipsum dolor sit amet, consectetur adipislabore et dolore magna aliqua.</h4>
       </div>
     </div>
   </section>
-  <section class="third-section">
-    <div class="container">
-      <div class="section-content3">
-        <img src="WEBSITE IMG/Map pin.png" alt="Resort Logo" class="locationpng" />
-        <h2>RESORT LOCATION</h2>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        </p>
-        <h3>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-          dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-          nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim
-          id est laborum <br><br><br>
 
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-          magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-          consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
-          est laborum</h3>
-        <button type="button" class="view-map-button" onclick="">
-          View Map
-        </button>
-        <button type="button" class="contact-us-button" onclick="">
-          Contact Us
-        </button>
-      </div>
-    </div>
-  </section>
+  <!-- More Sections -->
+
+
   <!--Experiences-->
   <section id="Experience" class="fourth-section">
     <div class="container">
