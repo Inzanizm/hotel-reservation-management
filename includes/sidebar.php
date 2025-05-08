@@ -77,17 +77,6 @@ $page = substr($_SERVER['SCRIPT_NAME'], strrpos($_SERVER['SCRIPT_NAME'], "/")+1)
             <span class="nav-link-text ms-1">Email Inquiry & FAQs</span>
           </a>
         </li>
-<<<<<<< HEAD
-=======
-        <li class="nav-item">
-          <a class="nav-link text-white <?= $page == "settings.php" ? 'active bg-gradient-dark text-white':''; ?>" href="settings.php">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-symbols-rounded opacity-10">table_view</i>
-            </div>
-            <span class="nav-link-text ms-1">Website Settings</span>
-          </a>
-        </li>
->>>>>>> 1822f4082b682e1570b338700bd39c929d099571
       </ul>
     </div>
   </div>

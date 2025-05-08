@@ -36,46 +36,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_room_btn']) && isset($_POST['room_id'])) {
         $roomId = (int)$_POST['room_id'];
         $deleteSql = "DELETE FROM rooms_tb WHERE room_id = $roomId";
-<<<<<<< HEAD
-        if ($connection->query($deleteSql)) {
-            echo "<script>alert('Room deleted successfully.');window.location.href='rooms.php';</script>";
-        } else {
-            echo "<script>alert('Error deleting room.');</script>";
-        }
-    }
-    // Edit
-    // Edit Room Status
-    elseif (isset($_POST['edit_room'])) {
-        $roomId = (int)$_POST['room_id'];
-        $statusId = (int)$_POST['room_status_id'];
-
-        $stmt = $connection->prepare("UPDATE rooms_tb SET room_status_id = ? WHERE room_id = ?");
-        $stmt->bind_param("ii", $statusId, $roomId);
-
-        if ($stmt->execute()) {
-            // Audit Logging
-            $operation_name = 'Update Room Details';
-=======
     
         if ($connection->query($deleteSql)) {
             // Audit Logging
             $operation_name = 'Delete Room';
->>>>>>> 1822f4082b682e1570b338700bd39c929d099571
             $operation_type_stmt = $connection->prepare("SELECT operation_type_id FROM operation_type_tb WHERE operation_name = ?");
             $operation_type_stmt->bind_param("s", $operation_name);
             $operation_type_stmt->execute();
             $operation_type_res = $operation_type_stmt->get_result();
-<<<<<<< HEAD
-
-            if ($operation_type_res->num_rows > 0) {
-                $operation_type = $operation_type_res->fetch_assoc();
-
-=======
     
             if ($operation_type_res->num_rows > 0) {
                 $operation_type = $operation_type_res->fetch_assoc();
     
->>>>>>> 1822f4082b682e1570b338700bd39c929d099571
                 $user_id = $_SESSION['userid'] ?? null;  // Ensure session user ID is available
                 if ($user_id) {
                     $log_stmt = $connection->prepare("INSERT INTO audit_log_tb (user_id, operation_type_id, timestamp) VALUES (?, ?, NOW())");
@@ -84,36 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $log_stmt->close();
                 }
             }
-<<<<<<< HEAD
-
-            $operation_type_stmt->close();
-            echo "<script>alert('Room status updated successfully.');window.location.href='rooms.php';</script>";
-        } else {
-            echo "<script>alert('Error updating room.');</script>";
-        }
-
-        $stmt->close();
-    }
-    // Add
-    elseif (isset($_POST['add_room'])) {
-        $roomNumber = $_POST['room_number'];
-        $roomTypeId = (int)$_POST['room_type_id'];
-        $statusId = (int)$_POST['room_status_id'];
-        $descriptions = $_POST['descriptions'];
-
-        $stmt = $connection->prepare("
-            INSERT INTO rooms_tb (room_number, room_type_id, room_status_id, descriptions)
-            VALUES (?, ?, ?, ?)
-        ");
-        $stmt->bind_param("siis", $roomNumber, $roomTypeId, $statusId, $descriptions);
-
-        if ($stmt->execute()) {
-            echo "<script>alert('Room added successfully.');window.location.href='rooms.php';</script>";
-        } else {
-            echo "<script>alert('Error adding room.');</script>";
-        }
-    }
-=======
     
             $operation_type_stmt->close();
             echo "<script>alert('Room deleted successfully.');window.location.href='rooms.php';</script>";
@@ -198,7 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "<script>alert('Error adding room.');</script>";
         }
     }    
->>>>>>> 1822f4082b682e1570b338700bd39c929d099571
 }
 ?>
 
@@ -245,11 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <a href="#" class="text-primary me-2" title="Edit" data-bs-toggle="modal" data-bs-target="#editRoomModal" onclick='setEditRoomData(<?= json_encode($row) ?>)'>
                                             <i class="fas fa-edit fa-lg"></i>
                                         </a>
-<<<<<<< HEAD
-                                        <form method="post" class="d-inline" onsubmit="return confirm('Are you sure?');">
-=======
                                         <form method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this?');">
->>>>>>> 1822f4082b682e1570b338700bd39c929d099571
                                             <input type="hidden" name="room_id" value="<?= $row['room_id'] ?>">
                                             <button type="submit" name="delete_room_btn" class="btn btn-sm btn-danger"><i class="fas fa-archive"></i></button>
                                         </form>
@@ -364,15 +301,6 @@ function setEditRoomData(data) {
     document.getElementById('editRoomStatusId').value = data.room_status_id;
 }
 </script>
-<<<<<<< HEAD
-
-<style>
-.table td, .table th { vertical-align: middle; }
-a.text-primary:hover, a.text-danger:hover { opacity: 0.7; transition: 0.2s ease; }
-.card-title { font-size: 1.5rem; font-weight: bold; color: #007bff; }
-.add-room-button { padding-top: 10px; left: 340px; position: relative; }
-</style>
-=======
 
 <style>
 .table td, .table th { vertical-align: middle; }
@@ -381,24 +309,6 @@ a.text-primary:hover, a.text-danger:hover { opacity: 0.7; transition: 0.2s ease;
 .add-room-button { padding-top: 10px; left: 340px; position: relative; }
 </style>
 
-<!-- Scripts -->
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- DataTables -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-<!-- DataTables Buttons -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-
-<!-- Initialize DataTables -->
 <script>
     $(document).ready(function () {
         $('#roomsTable').DataTable({
@@ -413,6 +323,3 @@ a.text-primary:hover, a.text-danger:hover { opacity: 0.7; transition: 0.2s ease;
         });
     });
 </script>
->>>>>>> 1822f4082b682e1570b338700bd39c929d099571
-
-<?php include('includes/footer.php'); ?>
